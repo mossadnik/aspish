@@ -1,0 +1,31 @@
+[project]
+name = "aspish"
+version = "0.1.0"
+description = "Answer Set Programming with a friendly interface."
+authors = [
+    {name = "Matthias Ossadnik",email = "ossadnik.matthias@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha"
+]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "clingo (>=5.8.0,<6.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "aspish", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+test = [
+    "pytest (>=9.0.3,<10.0.0)"
+]
+dev = [
+    "jupyter (>=1.1.1,<2.0.0)"
+]
