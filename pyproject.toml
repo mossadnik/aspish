@@ -18,6 +18,9 @@ dependencies = [
 [tool.poetry]
 packages = [{include = "aspish", from = "src"}]
 
+[tool.poetry.urls]
+homepage = "https://github.com/mossadnik/aspish"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
