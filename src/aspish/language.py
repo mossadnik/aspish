@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 
 PAT_VARIABLE_NAME = re.compile(r'_*(?:[A-Z]\w*)$')
-PAT_FUNCTION_NAME = re.compile(r'_*[a-z]\w*$')
+PAT_PREDICATE_NAME = re.compile(r'_*[a-z]\w*$')
 
 
 def validate_variable_name(name: str) -> bool:
@@ -16,8 +16,8 @@ def validate_variable_name(name: str) -> bool:
     return False
 
 
-def validate_function_name(name: str) -> bool:
-    return PAT_FUNCTION_NAME.match(name) is not None
+def validate_predicate_name(name: str) -> bool:
+    return PAT_PREDICATE_NAME.match(name) is not None
 
 
 def validate_atom(atom: 'Atom') -> bool:
@@ -49,14 +49,14 @@ def validate_rule(rule: 'Rule') -> bool:
 
 
 @dataclass(frozen=True)
-class Function:
-    """A Function represents class-level data for Atoms."""
+class Predicate:
+    """A Predicate represents class-level data for Atoms."""
     name: str
     signature: inspect.Signature
 
     def __post_init__(self):
-        if not validate_function_name(self.name):
-            raise InvalidStatement(f'Invalid function name: {self.name}')
+        if not validate_predicate_name(self.name):
+            raise InvalidStatement(f'Invalid predicate name: {self.name}')
 
     @property
     def arity(self) -> int:
@@ -74,8 +74,8 @@ class Function:
 
 @dataclass(frozen=True)
 class Atom:
-    """An Atom is an instance of a Function."""
-    function_: Function
+    """An Atom is an instance of a Predicate."""
+    predicate_: Predicate
     attributes: tuple
 
     def __post_init__(self):
@@ -130,8 +130,8 @@ def make_signature(names: Iterable[str]) -> inspect.Signature:
     return inspect.Signature(params)
 
 
-def new_function(name: str, attributes: Iterable[str]) -> 'Function':
-    return Function(name, make_signature(attributes))
+def predicate(name: str, attributes: Iterable[str]) -> 'Predicate':
+    return Predicate(name, make_signature(attributes))
 
 
 def not_(arg: Atom):

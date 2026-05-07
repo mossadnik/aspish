@@ -1,7 +1,7 @@
 import clingo
 from clingo.symbol import SymbolType
 from .translation import translate, deserialize
-from .language import Function, Atom
+from .language import Predicate, Atom
 
 
 class Solver:
@@ -27,19 +27,19 @@ class Solver:
             self._solved = True
             return True
 
-    def get(self, func: Function):
+    def get(self, predicate: Predicate):
         if not self._solved:
             raise AttributeError('Need to call solve before getting model results.')
-        functions = {(func.name, func.arity): func}
+        predicates = {(predicate.name, predicate.arity): predicate}
         res = (
-            deserialize(symbol, functions)
+            deserialize(symbol, predicates)
             for symbol in self._answer
             if symbol.type == SymbolType.Function
-            and symbol.name == func.name
-            and len(symbol.arguments) == func.arity
+            and symbol.name == predicate.name
+            and len(symbol.arguments) == predicate.arity
         )
         return [
-            dict(zip(func.attributes, atom.attributes))
+            dict(zip(predicate.attributes, atom.attributes))
             for atom in res
             if isinstance(atom, Atom)
         ]

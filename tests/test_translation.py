@@ -2,7 +2,7 @@ import string
 import pytest
 import clingo
 from aspish.translation import translate, deserialize
-from aspish.language import new_function, Rule, Variable, not_
+from aspish.language import predicate, Rule, Variable, not_
 
 
 class Test_translate:
@@ -31,16 +31,16 @@ class Test_translate:
         assert translate(Variable('X')) == 'X'
 
     def test_atom(self):
-        rel = new_function('a', ('a', 'b'))
+        rel = predicate('a', ('a', 'b'))
         atom = rel(1, 'b')
         assert translate(atom) == 'a(1, "b")'
 
     def test_rule(self):
-        rel = new_function('a', ('a','b'))
+        rel = predicate('a', ('a','b'))
         X = Variable('X')
         rule = Rule(rel(X, 1), (rel(X, 2),))
         assert translate(rule) == 'a(X, 1) :- a(X, 2)'
 
     def test_not_exists(self):
-        rel = new_function('a', ('a',))
+        rel = predicate('a', ('a',))
         assert translate(not_(rel(1))) == 'not a(1)'

@@ -2,7 +2,7 @@
 
 from functools import singledispatch
 from clingo.symbol import Symbol, SymbolType
-from .language import Variable, Atom, Rule, Not, Function
+from .language import Variable, Atom, Rule, Not, Predicate
 from . import utils as ut
 
 
@@ -19,7 +19,7 @@ def _(obj: Variable) -> str:
 @translate.register
 def _(obj: Atom) -> str:
     args = map(translate, obj.attributes)
-    return f'{obj.function_.name}({ut.csv(args)})'
+    return f'{obj.predicate_.name}({ut.csv(args)})'
 
 
 STRING_ESCAPE = {
@@ -59,13 +59,13 @@ class DeserializationError(ValueError):
     pass
 
 
-def deserialize(value: Symbol, functions: dict[tuple[str, int], Function]):
+def deserialize(value: Symbol, predicates: dict[tuple[str, int], Predicate]):
     if value.type == SymbolType.Function:
         try:
-            func = functions[(value.name, len(value.arguments))]
+            pred = predicates[(value.name, len(value.arguments))]
         except KeyError:
-            raise DeserializationError(f'Cannot deserialize function f{value.name}/{len(value.arguments)}')
-        return func(*[deserialize(arg, functions) for arg in value.arguments])
+            raise DeserializationError(f'Cannot deserialize predicate f{value.name}/{len(value.arguments)}')
+        return pred(*[deserialize(arg, predicates) for arg in value.arguments])
     elif value.type == SymbolType.Number:
         return value.number
     elif value.type == SymbolType.String:
