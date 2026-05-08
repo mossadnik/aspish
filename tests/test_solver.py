@@ -41,3 +41,15 @@ class Test_basic_usage:
             {'x': 3}
         ]
         assert_equal_list_of_dict(actual, expected)
+
+
+class Test_Solver_Interface:
+    def test_add_allows_one_or_more_statements(self):
+        sol = asp.Solver()
+        a = predicate('a', ('x',))
+        sol.add(
+            a(1),
+            a(2),
+            a(3) <= a(2)
+        ).solve()
+        assert_equal_list_of_dict(sol.get(a), [{'x': i + 1} for i in range(3)])

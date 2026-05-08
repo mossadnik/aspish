@@ -11,9 +11,9 @@ class Solver:
         self._statements = []
         self._solved = False
 
-    def add(self, statement) -> 'Solver':
+    def add(self, *statements) -> 'Solver':
+        self._statements.extend(statements)
         self._solved = False
-        self._statements.append(statement)
         return self
 
     def solve(self) -> bool:
