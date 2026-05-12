@@ -1,10 +1,10 @@
 from .solver import Solver
-from .language import (
+from .functions import (
     var,
     predicate,
     not_,
-    BLANK,
 )
+from .language import BLANK
 
 
 __version__ = '0.3.0'

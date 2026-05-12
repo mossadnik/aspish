@@ -1,6 +1,4 @@
-import aspish as asp
-from aspish.language import predicate
-
+from aspish import Solver, predicate, var, not_
 
 
 def assert_equal_list_of_dict(this: list[dict], that: list[dict]):
@@ -14,10 +12,10 @@ def assert_equal_list_of_dict(this: list[dict], that: list[dict]):
 
 class Test_basic_usage:
     def test_binary_relation_closure(self):
-        sol = asp.Solver()
+        sol = Solver()
         path = predicate('path', ('x', 'y'))
         edge = predicate('edge', ('x', 'y'))
-        X, Y, Z = map(asp.var, 'XYZ')
+        X, Y, Z = map(var, 'XYZ')
         sol.add(edge(1, 2))
         sol.add(edge(2, 3))
         sol.add(path(X, Y) <= edge(X, Y))
@@ -28,11 +26,11 @@ class Test_basic_usage:
         assert_equal_list_of_dict(actual, expected)
 
     def test_negation(self):
-        sol = asp.Solver()
+        sol = Solver()
         rel = predicate('a', ('x',))
         sol.add(rel(1))
-        sol.add(rel(2) <= asp.not_(rel(1)))
-        sol.add(rel(3) <= asp.not_(rel(2)))
+        sol.add(rel(2) <= not_(rel(1)))
+        sol.add(rel(3) <= not_(rel(2)))
         assert sol.solve()
         actual = sol.get(rel)
         expected = [
@@ -44,7 +42,7 @@ class Test_basic_usage:
 
 class Test_Solver_Interface:
     def test_add_allows_one_or_more_statements(self):
-        sol = asp.Solver()
+        sol = Solver()
         a = predicate('a', ('x',))
         sol.add(
             a(1),
@@ -54,7 +52,7 @@ class Test_Solver_Interface:
         assert_equal_list_of_dict(sol.get(a), [{'x': i + 1} for i in range(3)])
 
     def test_solve_model_predicate_filter(self):
-        sol = asp.Solver()
+        sol = Solver()
         a = predicate('a', ('x',))
         b = predicate('b', ('x',))
         sol.add(a(1), b(2))

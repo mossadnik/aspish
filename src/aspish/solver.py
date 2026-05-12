@@ -1,8 +1,9 @@
 from typing import Sequence, Optional
+from dataclasses import asdict
 import clingo
 from clingo.symbol import SymbolType, Symbol
 from .translation import translate, deserialize, show, join_statements
-from .language import Predicate, Atom
+from .language import Predicate, get_predicate_signature
 
 
 class Solver:
@@ -41,17 +42,16 @@ class Solver:
             raise AttributeError('Need to call solve before getting model results.')
         return self._raw_model
 
-    def get(self, predicate: Predicate):
-        predicates = {(predicate.name, predicate.arity): predicate}
+    def get(self, predicate: type[Predicate]):
+        predicates = {get_predicate_signature(predicate): predicate}
         res = (
             deserialize(symbol, predicates)
             for symbol in self.raw_model
             if symbol.type == SymbolType.Function
             and (symbol.name, len(symbol.arguments)) in predicates
         )
-        attribute_names = predicate.attributes
         return [
-            dict(zip(attribute_names, atom.attributes))
+            asdict(atom)
             for atom in res
-            if isinstance(atom, Atom)
+            if isinstance(atom, Predicate)
         ]

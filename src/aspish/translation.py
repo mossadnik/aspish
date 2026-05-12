@@ -3,7 +3,7 @@
 from typing import Iterable
 from functools import singledispatch
 from clingo.symbol import Symbol, SymbolType
-from .language import Variable, Atom, Rule, Not, Predicate
+from .language import Variable, Predicate, Rule, Not, get_predicate_signature, iter_atom_attributes
 from . import utils as ut
 
 
@@ -18,9 +18,9 @@ def _(obj: Variable) -> str:
 
 
 @translate.register
-def _(obj: Atom) -> str:
-    args = map(translate, obj.attributes)
-    return f'{obj.predicate_.name}({ut.csv(args)})'
+def _(obj: Predicate) -> str:
+    args = map(translate, iter_atom_attributes(obj))
+    return f'{obj.__class__.__name__}({ut.csv(args)})'
 
 
 STRING_ESCAPE = {
@@ -56,8 +56,9 @@ def _(obj: Not) -> str:
     return f'not {translate(obj.arg)}'
 
 
-def show(obj: Predicate) -> str:
-    return f'#show {obj.name}/{obj.arity}'
+def show(obj: type[Predicate]) -> str:
+    name, arity = get_predicate_signature(obj)
+    return f'#show {name}/{arity}'
 
 
 def join_statements(statements: Iterable[str]) -> str:
@@ -68,7 +69,7 @@ class DeserializationError(ValueError):
     pass
 
 
-def deserialize(value: Symbol, predicates: dict[tuple[str, int], Predicate]):
+def deserialize(value: Symbol, predicates: dict[tuple[str, int], type[Predicate]]):
     if value.type == SymbolType.Function:
         try:
             pred = predicates[(value.name, len(value.arguments))]
