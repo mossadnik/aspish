@@ -1,5 +1,6 @@
 """Translation of Python language objects into clingo source code."""
 
+from typing import Iterable
 from functools import singledispatch
 from clingo.symbol import Symbol, SymbolType
 from .language import Variable, Atom, Rule, Not, Predicate
@@ -53,6 +54,14 @@ def _(obj: Rule) -> str:
 @translate.register
 def _(obj: Not) -> str:
     return f'not {translate(obj.arg)}'
+
+
+def show(obj: Predicate) -> str:
+    return f'#show {obj.name}/{obj.arity}'
+
+
+def join_statements(statements: Iterable[str]) -> str:
+    return '\n'.join(f'{s}.' for s in statements) + '\n'
 
 
 class DeserializationError(ValueError):

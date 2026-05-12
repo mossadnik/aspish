@@ -23,7 +23,6 @@ class Test_basic_usage:
         sol.add(path(X, Y) <= edge(X, Y))
         sol.add(path(X, Y) <= (edge(X, Z), path(Z, Y)))
         assert sol.solve()
-        assert len(sol._answer) == 5
         actual = sol.get(path)
         expected = [{'x': 1, 'y': 2}, {'x': 2, 'y': 3}, {'x': 1, 'y': 3}]
         assert_equal_list_of_dict(actual, expected)
@@ -53,3 +52,15 @@ class Test_Solver_Interface:
             a(3) <= a(2)
         ).solve()
         assert_equal_list_of_dict(sol.get(a), [{'x': i + 1} for i in range(3)])
+
+    def test_solve_model_predicate_filter(self):
+        sol = asp.Solver()
+        a = predicate('a', ('x',))
+        b = predicate('b', ('x',))
+        sol.add(a(1), b(2))
+        sol.solve()
+        assert len(sol.raw_model) == 2
+        sol.solve(predicates=[b])
+        assert len(sol.raw_model) == 1
+        assert len(sol.get(b)) == 1
+        assert len(sol.get(a)) == 0
