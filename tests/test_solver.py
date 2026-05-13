@@ -1,13 +1,6 @@
+import pytest
 from aspish import Solver, predicate, var, not_
-
-
-def assert_equal_list_of_dict(this: list[dict], that: list[dict]):
-    def to_tuples(data: list[dict]) -> list[tuple]:
-        return sorted([
-            tuple(sorted(row.items()))
-            for row in data
-        ])
-    assert to_tuples(this) == to_tuples(that)
+from aspish.validators import InvalidStatement
 
 
 class Test_basic_usage:
@@ -22,23 +15,19 @@ class Test_basic_usage:
         sol.add(path(X, Y) <= (edge(X, Z), path(Z, Y)))
         assert sol.solve()
         actual = sol.get(path)
-        expected = [{'x': 1, 'y': 2}, {'x': 2, 'y': 3}, {'x': 1, 'y': 3}]
-        assert_equal_list_of_dict(actual, expected)
+        expected = {path(1, 2), path(2, 3), path(1, 3)}
+        assert set(actual) == expected
 
     def test_negation(self):
         sol = Solver()
-        rel = predicate('a', ('x',))
-        sol.add(rel(1))
-        sol.add(rel(2) <= not_(rel(1)))
-        sol.add(rel(3) <= not_(rel(2)))
+        a = predicate('a', ('x',))
+        sol.add(a(1))
+        sol.add(a(2) <= not_(a(1)))
+        sol.add(a(3) <= not_(a(2)))
         assert sol.solve()
-        actual = sol.get(rel)
-        expected = [
-            {'x': 1},
-            {'x': 3}
-        ]
-        assert_equal_list_of_dict(actual, expected)
-
+        actual = sol.get(a)
+        expected = {a(1), a(3)}
+        assert set(actual) == expected
 
 class Test_Solver_Interface:
     def test_add_allows_one_or_more_statements(self):
@@ -49,7 +38,7 @@ class Test_Solver_Interface:
             a(2),
             a(3) <= a(2)
         ).solve()
-        assert_equal_list_of_dict(sol.get(a), [{'x': i + 1} for i in range(3)])
+        assert set(sol.get(a)) == {a(1), a(2), a(3)}
 
     def test_solve_model_predicate_filter(self):
         sol = Solver()
@@ -63,3 +52,17 @@ class Test_Solver_Interface:
             assert len(sol.raw_model) == 1
             assert len(sol.get(b)) == 1
             assert len(sol.get(a)) == 0
+
+
+class Test_input_validation:
+    def test_invalid_rule(self):
+        sol = Solver()
+        a = predicate('a', ('x',))
+        with pytest.raises(InvalidStatement):
+            sol.add(a() <= a(1))
+
+    def test_invalid_fact(self):
+        sol = Solver()
+        a = predicate('a', ('x',))
+        with pytest.raises(InvalidStatement):
+            sol.add(a(None))

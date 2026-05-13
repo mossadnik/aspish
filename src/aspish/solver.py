@@ -1,9 +1,9 @@
-from typing import Sequence, Optional
-from dataclasses import asdict
+from typing import Sequence, Optional, cast
 import clingo
 from clingo.symbol import SymbolType, Symbol
 from .translation import translate, deserialize, show, join_statements
-from .language import Atom, get_predicate_signature
+from .language import Atom, Rule, get_predicate_signature
+from .validators import validate_rule, validate_fact
 
 
 class Solver:
@@ -15,6 +15,11 @@ class Solver:
         self._raw_model = None
 
     def add(self, *statements) -> 'Solver':
+        for s in statements:
+            if isinstance(s, Rule):
+                validate_rule(s)
+            elif isinstance(s, Atom):
+                validate_fact(s)
         self._statements.extend(statements)
         return self
 
@@ -42,16 +47,11 @@ class Solver:
             raise AttributeError('Need to call solve before getting model results.')
         return self._raw_model
 
-    def get(self, predicate: type[Atom]):
+    def get(self, predicate: type[Atom]) -> list[Atom]:
         predicates = {get_predicate_signature(predicate): predicate}
-        res = (
-            deserialize(symbol, predicates)
+        return [
+            cast(Atom, deserialize(symbol, predicates))
             for symbol in self.raw_model
             if symbol.type == SymbolType.Function
             and (symbol.name, len(symbol.arguments)) in predicates
-        )
-        return [
-            asdict(atom)
-            for atom in res
-            if isinstance(atom, Atom)
         ]

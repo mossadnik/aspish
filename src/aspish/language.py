@@ -51,3 +51,13 @@ def get_atom_variables(atom: Atom) -> set[Variable]:
         elif isinstance(a, Variable):
             res.add(a)
     return res
+
+
+def iter_rule_atoms(rule: Rule, head: bool = True, negative: bool = True) -> Generator[Atom, None, None]:
+    if head:
+        yield rule.head
+    for obj in rule.body:
+        if isinstance(obj, Atom):
+            yield obj
+        elif negative and isinstance(obj, Not):
+            yield obj.arg
