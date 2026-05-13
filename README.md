@@ -37,5 +37,5 @@ solver.solve()
 solver.get(path)
 
 # returns
-[{'x': 1, 'y': 2}, {'x': 2, 'y': 3}, {'x': 1, 'y': 3}]
+[path(x=1, y=2), path(x=2, y=3), path(x=1, y=3)]
 ```
