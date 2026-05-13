@@ -58,7 +58,8 @@ class Test_Solver_Interface:
         sol.add(a(1), b(2))
         sol.solve()
         assert len(sol.raw_model) == 2
-        sol.solve(predicates=[b])
-        assert len(sol.raw_model) == 1
-        assert len(sol.get(b)) == 1
-        assert len(sol.get(a)) == 0
+        for predicates in (b, [b]):
+            sol.solve(predicates=predicates)
+            assert len(sol.raw_model) == 1
+            assert len(sol.get(b)) == 1
+            assert len(sol.get(a)) == 0

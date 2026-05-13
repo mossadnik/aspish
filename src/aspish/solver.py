@@ -3,7 +3,7 @@ from dataclasses import asdict
 import clingo
 from clingo.symbol import SymbolType, Symbol
 from .translation import translate, deserialize, show, join_statements
-from .language import Predicate, get_predicate_signature
+from .language import Atom, get_predicate_signature
 
 
 class Solver:
@@ -20,12 +20,12 @@ class Solver:
 
     def solve(
             self,
-            predicates: Optional[Predicate | Sequence[Predicate]] = None
+            predicates: Optional[type[Atom] | Sequence[type[Atom]]] = None
     ) -> bool:
         self._ctl.add('base', [], join_statements(translate(s) for s in self._statements))
         filter_predicates = predicates is not None
         if filter_predicates:
-            if isinstance(predicates, Predicate):
+            if isinstance(predicates, type):
                 predicates = [predicates]
             self._ctl.add('base', [], join_statements(show(p) for p in predicates))
         self._ctl.ground()
@@ -42,7 +42,7 @@ class Solver:
             raise AttributeError('Need to call solve before getting model results.')
         return self._raw_model
 
-    def get(self, predicate: type[Predicate]):
+    def get(self, predicate: type[Atom]):
         predicates = {get_predicate_signature(predicate): predicate}
         res = (
             deserialize(symbol, predicates)
@@ -53,5 +53,5 @@ class Solver:
         return [
             asdict(atom)
             for atom in res
-            if isinstance(atom, Predicate)
+            if isinstance(atom, Atom)
         ]

@@ -1,6 +1,6 @@
 from typing import Iterable
 from dataclasses import make_dataclass, field
-from .language import Variable, Predicate, BLANK, Not
+from .language import Variable, Atom, BLANK, Not
 from .validators import validate_predicate_name, validate_variable_name
 
 
@@ -9,7 +9,7 @@ def var(name: str) -> Variable:
     return Variable(name)
 
 
-def predicate(name: str, attributes: Iterable[str]) -> type[Predicate]:
+def predicate(name: str, attributes: Iterable[str]) -> type[Atom]:
     validate_predicate_name(name)
     return make_dataclass(
         name,
@@ -17,11 +17,11 @@ def predicate(name: str, attributes: Iterable[str]) -> type[Predicate]:
             (a, int | str | Variable, field(default=BLANK))
             for a in attributes
         ],
-        bases=(Predicate,),
+        bases=(Atom,),
         frozen=True,
         slots=True
     )
 
 
-def not_(arg: Predicate):
+def not_(arg: Atom):
     return Not(arg)

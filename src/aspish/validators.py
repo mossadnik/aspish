@@ -1,7 +1,7 @@
 """Validation of language inputs."""
 import re
 from dataclasses import astuple
-from .language import Variable, Predicate, Rule, BLANK
+from .language import Variable, Atom, Rule, BLANK
 from .language import get_atom_variables
 
 
@@ -25,9 +25,9 @@ def validate_predicate_name(name: str) -> None:
         raise InvalidStatement(f'Invalid predicate name: {name}')
 
 
-def validate_atom(pred: Predicate) -> None:
-    if any(not isinstance(a, (int, str, Variable)) for a in astuple(pred)):
-        raise InvalidStatement(f'Invalid predicate arguments: {pred}')
+def validate_atom(atom: Atom) -> None:
+    if any(not isinstance(a, (int, str, Variable)) for a in astuple(atom)):
+        raise InvalidStatement(f'Invalid predicate arguments: {atom}')
 
 
 def validate_rule(rule: Rule) -> None:
@@ -36,6 +36,6 @@ def validate_rule(rule: Rule) -> None:
     if BLANK in head_vars:
         raise InvalidStatement(f'BLANK variable "_" in rule head: {rule}')
     # body variables for positive atoms only
-    body_vars = set().union(*(get_atom_variables(a) for a in rule.body if isinstance(a, Predicate)))
+    body_vars = set().union(*(get_atom_variables(a) for a in rule.body if isinstance(a, Atom)))
     if head_vars.difference(body_vars):
         raise InvalidStatement(f'Unbound variable(s) in rule head: {rule}')
