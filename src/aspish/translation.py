@@ -70,15 +70,17 @@ class DeserializationError(ValueError):
 
 
 def deserialize(value: Symbol, predicates: dict[tuple[str, int], type[Atom]]):
-    if value.type == SymbolType.Function:
+    value_type = value.type
+    if value_type == SymbolType.Function:
+        arguments = value.arguments
         try:
-            pred = predicates[(value.name, len(value.arguments))]
+            pred = predicates[(value.name, len(arguments))]
         except KeyError:
-            raise DeserializationError(f'Cannot deserialize predicate f{value.name}/{len(value.arguments)}')
-        return pred(*[deserialize(arg, predicates) for arg in value.arguments])
-    elif value.type == SymbolType.String:
+            raise DeserializationError(f'Cannot deserialize predicate f{value.name}/{len(arguments)}')
+        return pred(*[deserialize(arg, predicates) for arg in arguments])
+    elif value_type == SymbolType.String:
         return value.string.replace('\\t', '\t')
-    elif value.type == SymbolType.Number:
+    elif value_type == SymbolType.Number:
         return value.number
     else:
         raise DeserializationError(f'Cannot deserialize value {value}: Unknown type.')
