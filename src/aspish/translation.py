@@ -3,7 +3,10 @@
 from typing import Iterable
 from functools import singledispatch
 from clingo.symbol import Symbol, SymbolType
-from .language import Variable, Atom, Rule, Not, get_predicate_signature, iter_atom_attributes
+from .language import (
+    ASTVariable, Atom, Rule, Not, BinaryOperator,
+    get_predicate_signature, iter_atom_attributes
+)
 from . import utils as ut
 
 
@@ -13,7 +16,7 @@ def translate(obj) -> str:
 
 
 @translate.register
-def _(obj: Variable) -> str:
+def _(obj: ASTVariable) -> str:
     return obj.name
 
 
@@ -54,6 +57,13 @@ def _(obj: Rule) -> str:
 @translate.register
 def _(obj: Not) -> str:
     return f'not {translate(obj.arg)}'
+
+
+@translate.register
+def _(obj: BinaryOperator) -> str:
+    left = translate(obj.left)
+    right = translate(obj.right)
+    return f'{left} {obj.operator} {right}'
 
 
 def show(obj: type[Atom]) -> str:

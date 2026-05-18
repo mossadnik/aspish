@@ -1,6 +1,6 @@
 from typing import Iterable
 from attrs import make_class, field
-from .language import Variable, Atom, BLANK, Not
+from .language import Variable, ASTVariable, Atom, BLANK, Not, as_ast
 from .validators import validate_predicate_name, validate_variable_name
 
 
@@ -14,7 +14,11 @@ def predicate(name: str, attributes: Iterable[str]) -> type[Atom]:
     return make_class(
         name,
         {
-            a: field(type=int | str | Variable, default=BLANK)
+            a: field(
+                type=int | str | ASTVariable,
+                default=BLANK,
+                converter=as_ast
+            )
             for a in attributes
         },
         bases=(Atom,),

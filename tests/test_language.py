@@ -1,6 +1,10 @@
 from aspish import predicate, var
 from aspish.language import (
     Rule,
+    ASTVariable,
+    Expression,
+    OperatorName,
+    BinaryOperator,
     get_atom_variables,
 )
 
@@ -24,4 +28,15 @@ class Test_Rule_syntax:
 class Test_get_predicate_variables:
     def test_returns_set_of_variables(self):
         a = predicate('a', ('x',))
-        assert get_atom_variables(a(var('X'))) == {var('X'),}
+        assert get_atom_variables(a(var('X'))) == {ASTVariable('X'),}
+
+
+class Test_Variable:
+    def test_eq(self):
+        actual = var('X') == var('Y')
+        assert isinstance(actual, BinaryOperator)
+        assert actual.operator == OperatorName.equal
+        assert isinstance(actual.left, ASTVariable)
+        assert actual.left.name == 'X'
+        assert isinstance(actual.right, ASTVariable)
+        assert actual.right.name == 'Y'

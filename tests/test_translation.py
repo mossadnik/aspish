@@ -1,7 +1,9 @@
 import string
 import pytest
 import clingo
+import operator
 from aspish.translation import translate, deserialize
+from aspish.language import ASTVariable
 from aspish import not_, predicate, var
 
 
@@ -28,7 +30,7 @@ class Test_translate:
         assert translate(value) == expected
 
     def test_variable(self):
-        assert translate(var('X')) == 'X'
+        assert translate(ASTVariable('X')) == 'X'
 
     def test_atom(self):
         rel = predicate('a', ('a', 'b'))
@@ -44,3 +46,15 @@ class Test_translate:
     def test_not_exists(self):
         rel = predicate('a', ('a',))
         assert translate(not_(rel(1))) == 'not a(1)'
+
+    @pytest.mark.parametrize('op, expected', [
+        [operator.eq, '='],
+        [operator.ne, '!='],
+        [operator.lt, '<'],
+        [operator.le, '<='],
+        [operator.gt, '>'],
+        [operator.ge, '>='],
+    ])
+    def test_binary_operator(self, op, expected):
+        X, Y = map(var, 'XY')
+        assert translate(op(X, Y)) == f'X {expected} Y'

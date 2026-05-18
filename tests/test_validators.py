@@ -1,3 +1,4 @@
+import operator
 import pytest
 from aspish.validators import (
     InvalidStatement,
@@ -6,6 +7,7 @@ from aspish.validators import (
     validate_atom,
     validate_rule,
     validate_fact,
+    validate_expression,
 )
 from aspish import predicate, var, not_, BLANK
 
@@ -76,6 +78,23 @@ class Test_validate_rule:
         with pytest.raises(InvalidStatement):
             validate_rule(a(1) <= (a(2), not_(a(None))))
 
+    def test_accepts_variables_bound_through_expression(self):
+        a = predicate('a', ('x',))
+        X, Y = map(var, 'XY')
+        assert validate_rule(a(X) <= (a(Y), X == Y)) is None
+
+    def test_rejects_variables_bound_through_unsafe_expression(self):
+        a = predicate('a', ('x',))
+        X, Y = map(var, 'XY')
+        with pytest.raises(InvalidStatement):
+            validate_rule(a(X) <= (a(Y), X != Y))
+
+    def test_raises_if_body_expression_invalid(self):
+        a = predicate('a', ('x',))
+        X, Y = map(var, 'XY')
+        with pytest.raises(InvalidStatement):
+            validate_rule(a(1) <= (X == (Y == 1), a(X), a(Y)))
+
 
 class Test_validate_fact:
     @pytest.mark.parametrize('value', [1, 'a'])
@@ -88,3 +107,12 @@ class Test_validate_fact:
         a = predicate('a', ('x',))
         with pytest.raises(InvalidStatement):
             validate_fact(a(value))
+
+
+class Test_validate_expression:
+    @pytest.mark.parametrize('op', [operator.eq, operator.ne, operator.lt, operator.le, operator.gt, operator.ge])
+    def test_boolean_operators_must_be_expression_roots(self, op):
+        X, Y, Z = map(var, 'XYZ')
+        expr = op(X, Y) == Z
+        with pytest.raises(InvalidStatement):
+            validate_expression(expr)
