@@ -7,7 +7,7 @@ from .validators import validate_rule, validate_fact
 
 
 class Solver:
-    """Create and solve a logic program.d"""
+    """Create and solve a logic program."""
     def __init__(self):
         self._ctl = clingo.Control()
         self._statements = []

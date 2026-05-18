@@ -1,8 +1,8 @@
 from typing import Generator
-from dataclasses import dataclass, fields
+from attrs import define, fields
 
 
-@dataclass(frozen=True, slots=True)
+@define(frozen=True, slots=True)
 class Atom:
     # need args/kwargs so that static type checker does not complain about subclass constructor
    def __init__(self, *args, **kwargs):
@@ -14,18 +14,18 @@ class Atom:
         return Rule(self, other)
 
 
-@dataclass(frozen=True)
+@define(frozen=True)
 class Not:
     arg: Atom
 
 
-@dataclass(frozen=True)
+@define(frozen=True)
 class Variable:
     """A variable used for matching in rules."""
     name: str
 
 
-@dataclass(frozen=True)
+@define(frozen=True)
 class Rule:
     head: Atom
     body: tuple[Atom | Not, ...]
@@ -35,7 +35,7 @@ BLANK = Variable('_')
 
 
 def get_predicate_signature(atom: type[Atom]):
-    return (atom.__name__, len(atom.__dataclass_fields__))
+    return (atom.__name__, len(fields(atom)))
 
 
 def iter_atom_attributes(atom: Atom) -> Generator:
