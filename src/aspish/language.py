@@ -1,21 +1,8 @@
 from typing import Generator
-from enum import StrEnum
-from attrs import define, fields, field
-
-
-def as_ast(value: 'int | str | Expression') -> 'int | str | Expression | ASTVariable':
-    if isinstance(value, Variable):
-        return ASTVariable(value.name)
-    return value
-
-
-class OperatorName(StrEnum):
-    equal = '='
-    not_equal = '!='
-    less_than = '<'
-    less_than_or_equal = '<='
-    greater_than = '>'
-    greater_than_or_equal = '>='
+from functools import singledispatch
+from attrs import define, fields
+from .const import OperatorName
+from . import ast
 
 
 @define(frozen=True, eq=False, order=False)
@@ -46,13 +33,14 @@ class Expression:
 @define(frozen=True, eq=False, order=False)
 class BinaryOperator(Expression):
     operator: OperatorName
-    left: 'Expression | int | str | ASTVariable' = field(converter=as_ast)
-    right: 'Expression | int | str | ASTVariable' = field(converter=as_ast)
+    left: Expression | int | str
+    right: Expression | int | str
 
     @property
     def children(self) -> Generator:
         yield self.left
         yield self.right
+
 
 @define(frozen=True, eq=False, order=False)
 class Variable(Expression):
@@ -60,12 +48,6 @@ class Variable(Expression):
 
     Not hashable, for rule input only.
     """
-    name: str
-
-
-@define(frozen=True, slots=True)
-class ASTVariable:
-    """Internal hashable representation of Variable without dunder methods."""
     name: str
 
 
@@ -95,30 +77,43 @@ class Rule:
 BLANK = Variable('_')
 
 
-def get_predicate_signature(atom: type[Atom]):
-    return (atom.__name__, len(fields(atom)))
+@singledispatch
+def to_ast(obj) -> ast.ASTNode:
+    raise TypeError(f'Cannot parse object of type {type(obj)}')
 
 
-def iter_atom_attributes(atom: Atom) -> Generator:
-    for f in fields(atom):
-        yield getattr(atom, f.name)
+@to_ast.register
+def _(obj: Variable):
+    return ast.ASTVariable(obj.name)
 
 
-def get_atom_variables(atom: Atom) -> set[ASTVariable]:
-    res = set()
-    for a in iter_atom_attributes(atom):
-        if isinstance(a, Atom):
-            res.update(get_atom_variables(a))
-        elif isinstance(a, ASTVariable):
-            res.add(a)
-    return res
+@to_ast.register
+def _(obj: Atom) -> ast.ASTNode:
+    arguments = map(to_ast, (getattr(obj, a.name) for a in fields(obj)))
+    return ast.ASTFunction(name=obj.__class__.__name__, arguments=tuple(arguments))
 
 
-def iter_rule_atoms(rule: Rule, head: bool = True, negative: bool = True) -> Generator[Atom, None, None]:
-    if head:
-        yield rule.head
-    for obj in rule.body:
-        if isinstance(obj, Atom):
-            yield obj
-        elif negative and isinstance(obj, Not):
-            yield obj.arg
+@to_ast.register
+def _(obj: Rule) -> ast.ASTRule:
+    head = to_ast(obj.head)
+    body = map(to_ast, obj.body)
+    return ast.ASTRule(head, tuple(body))
+
+
+@to_ast.register
+def _(obj: str | int) -> ast.ASTNode:
+    return ast.ASTLiteral(obj)
+
+
+@to_ast.register
+def _(obj: Not) -> ast.ASTNode:
+    return ast.ASTNot(to_ast(obj.arg))
+
+
+@to_ast.register
+def _(obj: BinaryOperator) -> ast.ASTNode:
+    return ast.ASTBinaryOperator(
+        name=obj.operator,
+        left=to_ast(obj.left),
+        right=to_ast(obj.right)
+    )

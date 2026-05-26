@@ -8,8 +8,10 @@ from aspish.validators import (
     validate_rule,
     validate_fact,
     validate_expression,
+    get_atom_variables,
 )
 from aspish import predicate, var, not_, BLANK
+from aspish.language import to_ast
 
 
 class Test_validate_predicate_name:
@@ -116,3 +118,9 @@ class Test_validate_expression:
         expr = op(X, Y) == Z
         with pytest.raises(InvalidStatement):
             validate_expression(expr)
+
+
+class Test_get_predicate_variables:
+    def test_returns_set_of_variable_names(self):
+        a = predicate('a', ('x',))
+        assert get_atom_variables(a(var('X'))) == {'X',}

@@ -1,15 +1,17 @@
 from typing import Sequence, Optional, cast
+import itertools as it
 import clingo
 from clingo.symbol import SymbolType, Symbol
 from .translation import translate, deserialize, show, join_statements
-from .language import Atom, Rule, get_predicate_signature
-from .validators import validate_rule, validate_fact
+from .language import Atom, Rule, to_ast
+from .validators import validate_rule, validate_fact, get_predicate_signature
 
 
 class Solver:
     """Create and solve a logic program."""
     def __init__(self):
         self._ctl = clingo.Control()
+        self._facts = []
         self._statements = []
         self._solved = False
         self._raw_model = None
@@ -18,16 +20,17 @@ class Solver:
         for s in statements:
             if isinstance(s, Rule):
                 validate_rule(s)
+                self._statements.append(to_ast(s))
             elif isinstance(s, Atom):
                 validate_fact(s)
-        self._statements.extend(statements)
+                self._facts.append(s)
         return self
 
     def solve(
             self,
             predicates: Optional[type[Atom] | Sequence[type[Atom]]] = None
     ) -> bool:
-        self._ctl.add('base', [], join_statements(translate(s) for s in self._statements))
+        self._ctl.add('base', [], join_statements(translate(s) for s in it.chain(self._facts, self._statements)))
         filter_predicates = predicates is not None
         if filter_predicates:
             if isinstance(predicates, type):

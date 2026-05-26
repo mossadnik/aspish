@@ -3,9 +3,18 @@
 from typing import Iterable
 from functools import singledispatch
 from clingo.symbol import Symbol, SymbolType
-from .language import (
-    ASTVariable, Atom, Rule, Not, BinaryOperator,
-    get_predicate_signature, iter_atom_attributes
+from .ast import (
+    ASTBinaryOperator,
+    ASTVariable,
+    ASTLiteral,
+    ASTFunction,
+    ASTNot,
+    ASTRule,
+)
+from .language import Atom
+from .validators import (
+    get_predicate_signature,
+    iter_atom_attributes
 )
 from . import utils as ut
 
@@ -38,6 +47,10 @@ STRING_ESCAPE = {
 
 
 @translate.register
+def _(obj: ASTLiteral) -> str:
+    return translate(obj.value)
+
+@translate.register
 def _(obj: str) -> str:
     return f'"{obj.translate(STRING_ESCAPE)}"'
 
@@ -48,22 +61,28 @@ def _(obj: int) -> str:
 
 
 @translate.register
-def _(obj: Rule) -> str:
+def _(obj: ASTFunction) -> str:
+    args = map(translate, obj.arguments)
+    return f'{obj.name}({ut.csv(args)})'
+
+
+@translate.register
+def _(obj: ASTRule) -> str:
     head = translate(obj.head)
     body = map(translate, obj.body)
     return f'{head} :- {ut.csv(body)}'
 
 
 @translate.register
-def _(obj: Not) -> str:
+def _(obj: ASTNot) -> str:
     return f'not {translate(obj.arg)}'
 
 
 @translate.register
-def _(obj: BinaryOperator) -> str:
+def _(obj: ASTBinaryOperator) -> str:
     left = translate(obj.left)
     right = translate(obj.right)
-    return f'{left} {obj.operator} {right}'
+    return f'{left} {obj.name} {right}'
 
 
 def show(obj: type[Atom]) -> str:

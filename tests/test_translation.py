@@ -3,7 +3,8 @@ import pytest
 import clingo
 import operator
 from aspish.translation import translate, deserialize
-from aspish.language import ASTVariable
+from aspish.language import to_ast
+from aspish.ast import ASTVariable
 from aspish import not_, predicate, var
 
 
@@ -41,11 +42,11 @@ class Test_translate:
         rel = predicate('a', ('a','b'))
         X = var('X')
         rule = rel(X, 1) <= rel(X, 2)
-        assert translate(rule) == 'a(X, 1) :- a(X, 2)'
+        assert translate(to_ast(rule)) == 'a(X, 1) :- a(X, 2)'
 
     def test_not_exists(self):
         rel = predicate('a', ('a',))
-        assert translate(not_(rel(1))) == 'not a(1)'
+        assert translate(to_ast(not_(rel(1)))) == 'not a(1)'
 
     @pytest.mark.parametrize('op, expected', [
         [operator.eq, '='],
@@ -57,4 +58,4 @@ class Test_translate:
     ])
     def test_binary_operator(self, op, expected):
         X, Y = map(var, 'XY')
-        assert translate(op(X, Y)) == f'X {expected} Y'
+        assert translate(to_ast(op(X, Y))) == f'X {expected} Y'
