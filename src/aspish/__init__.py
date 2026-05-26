@@ -7,7 +7,7 @@ from .functions import (
 from .language import BLANK
 
 
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 
 __all__ = [
