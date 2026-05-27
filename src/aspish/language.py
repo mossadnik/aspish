@@ -89,7 +89,7 @@ class Atom:
    def __init__(self, *args, **kwargs):
        super().__init__()
 
-   def __le__(self, other: 'Atom | Not | tuple[Atom | Not | Comparison, ...]') -> 'Rule':
+   def __le__(self, other: 'Atom | Not | Comparison | tuple[Atom | Not | Comparison, ...]') -> 'Rule':
         if not isinstance(other, tuple):
             other = (other,)
         return Rule(self, other)

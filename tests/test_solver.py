@@ -51,6 +51,15 @@ class Test_basic_usage:
             result('minus', 5),
         }
 
+    def test_isin(self):
+        sol = Solver()
+        a = predicate('a', ('x',))
+        X = var('X')
+        sol.add(a(X) <= X.isin(1, 2, 'x'))
+        sol.solve()
+        assert set(sol.get(a)) == {a(1), a(2), a('x')}
+
+
 class Test_Solver_Interface:
     def test_add_allows_one_or_more_statements(self):
         sol = Solver()
