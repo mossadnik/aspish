@@ -1,6 +1,6 @@
 [project]
 name = "aspish"
-version = "0.5.0"
+version = "0.6.0"
 description = "Answer Set Programming with a friendly interface."
 authors = [
     {name = "Matthias Ossadnik",email = "ossadnik.matthias@gmail.com"}
