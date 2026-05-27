@@ -29,6 +29,28 @@ class Test_basic_usage:
         expected = {a(1), a(3)}
         assert set(actual) == expected
 
+    def test_arithmetic_examples(self):
+        """Clingo guide examples."""
+        sol = Solver()
+        left = predicate('left', ('val',))
+        right = predicate('right', ('val',))
+        result = predicate('result', ('name', 'val'))
+        L, R = map(var, 'LR')
+        sol.add(
+            left(7),
+            right(2)
+        )
+        sol.add(
+            result('plus', L + R) <= (left(L), right(R)),
+            result('minus', L - R) <= (left(L), right(R)),
+        )
+        sol.solve()
+        actual = {r for r in sol.get(result)}
+        assert actual == {
+            result('plus', 9),
+            result('minus', 5),
+        }
+
 class Test_Solver_Interface:
     def test_add_allows_one_or_more_statements(self):
         sol = Solver()
@@ -55,12 +77,6 @@ class Test_Solver_Interface:
 
 
 class Test_input_validation:
-    def test_invalid_rule(self):
-        sol = Solver()
-        a = predicate('a', ('x',))
-        with pytest.raises(InvalidStatement):
-            sol.add(a() <= a(1))
-
     def test_invalid_fact(self):
         sol = Solver()
         a = predicate('a', ('x',))

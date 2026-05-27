@@ -11,23 +11,23 @@ class Expression:
     def children(self) -> Generator:
         yield from ()
 
-    def __eq__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperation(ComparisonOperator.equal, self, other)
+    def __eq__(self, other: 'Expression | int | str') -> 'Comparison':
+        return Comparison(ComparisonOperator.equal, self, other)
 
-    def __ne__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperation(ComparisonOperator.not_equal, self, other)
+    def __ne__(self, other: 'Expression | int | str') -> 'Comparison':
+        return Comparison(ComparisonOperator.not_equal, self, other)
 
-    def __lt__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperation(ComparisonOperator.less_than, self, other)
+    def __lt__(self, other: 'Expression | int | str') -> 'Comparison':
+        return Comparison(ComparisonOperator.less_than, self, other)
 
-    def __le__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperation(ComparisonOperator.less_than_or_equal, self, other)
+    def __le__(self, other: 'Expression | int | str') -> 'Comparison':
+        return Comparison(ComparisonOperator.less_than_or_equal, self, other)
 
-    def __gt__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperation(ComparisonOperator.greater_than, self, other)
+    def __gt__(self, other: 'Expression | int | str') -> 'Comparison':
+        return Comparison(ComparisonOperator.greater_than, self, other)
 
-    def __ge__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperation(ComparisonOperator.greater_than_or_equal, self, other)
+    def __ge__(self, other: 'Expression | int | str') -> 'Comparison':
+        return Comparison(ComparisonOperator.greater_than_or_equal, self, other)
 
     def __add__(self, other: 'Expression | int') -> 'Expression':
         return BinaryOperation(BinaryOperator.plus, self, other)
@@ -41,10 +41,30 @@ class Expression:
     def __rsub__(self, other: 'Expression | int') -> 'Expression':
         return BinaryOperation(BinaryOperator.minus, other, self)
 
+    def isin(self, *values: 'Expression | int | str') -> 'Comparison':
+        return Comparison(ComparisonOperator.equal, self, Pool(values))
+
+
+@define(frozen=True, eq=False, order=False)
+class Pool(Expression):
+    values: tuple[Expression | str | int, ...]
+
 
 @define(frozen=True, eq=False, order=False)
 class BinaryOperation(Expression):
-    operator: ComparisonOperator | BinaryOperator
+    operator: BinaryOperator
+    left: Expression | int | str
+    right: Expression | int | str
+
+    @property
+    def children(self) -> Generator:
+        yield self.left
+        yield self.right
+
+
+@define(frozen=True, eq=False, order=False)
+class Comparison:
+    operator: ComparisonOperator
     left: Expression | int | str
     right: Expression | int | str
 
@@ -69,7 +89,7 @@ class Atom:
    def __init__(self, *args, **kwargs):
        super().__init__()
 
-   def __le__(self, other: 'Atom | Not | tuple[Atom | Not | Expression, ...]') -> 'Rule':
+   def __le__(self, other: 'Atom | Not | tuple[Atom | Not | Comparison, ...]') -> 'Rule':
         if not isinstance(other, tuple):
             other = (other,)
         return Rule(self, other)
@@ -83,7 +103,7 @@ class Not:
 @define(frozen=True)
 class Rule:
     head: Atom
-    body: tuple[Atom | Not | Expression, ...]
+    body: tuple[Atom | Not | Comparison, ...]
 
 
 BLANK = Variable('_')
@@ -124,17 +144,22 @@ def _(obj: Not) -> ast.ASTNode:
 
 @to_ast.register
 def _(obj: BinaryOperation) -> ast.ASTNode:
-    if isinstance(obj.operator, ComparisonOperator):
-        return ast.ASTComparison(
-            name=obj.operator,
-            left=to_ast(obj.left),
-            right=to_ast(obj.right)
-        )
-    elif isinstance(obj.operator, BinaryOperator):
-        return ast.ASTBinaryOperation(
-            name=obj.operator,
-            left=to_ast(obj.left),
-            right=to_ast(obj.right)
-        )
-    else:
-        raise AttributeError(f'Invalid binary operator: {obj.operator}')
+    return ast.ASTBinaryOperation(
+        name=obj.operator,
+        left=to_ast(obj.left),
+        right=to_ast(obj.right)
+    )
+
+
+@to_ast.register
+def _(obj: Comparison) -> ast.ASTNode:
+    return ast.ASTComparison(
+        name=obj.operator,
+        left=to_ast(obj.left),
+        right=to_ast(obj.right)
+    )
+
+
+@to_ast.register
+def _(obj: Pool) -> ast.ASTNode:
+    return ast.ASTPool(tuple(map(to_ast, obj.values)))

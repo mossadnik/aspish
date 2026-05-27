@@ -76,3 +76,7 @@ class Test_translate:
     def test_binary_operator_right(self, op, expected):
         X = var('X')
         assert translate(to_ast(op(1, X))) == expected
+
+    def test_variable_isin(self):
+        X, Y = map(var, 'XY')
+        assert translate(to_ast(X.isin(1, Y, 'a'))) == 'X = (1;Y;"a")'

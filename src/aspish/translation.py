@@ -10,6 +10,7 @@ from .ast import (
     ASTLiteral,
     ASTFunction,
     ASTNot,
+    ASTPool,
     ASTRule,
 )
 from .language import Atom
@@ -84,6 +85,12 @@ def _(obj: ASTComparison | ASTBinaryOperation) -> str:
     left = translate(obj.left)
     right = translate(obj.right)
     return f'{left} {obj.name} {right}'
+
+
+@translate.register
+def _(obj: ASTPool) -> str:
+    values = ";".join(map(translate, obj.values))
+    return f'({values})'
 
 
 def show(obj: type[Atom]) -> str:

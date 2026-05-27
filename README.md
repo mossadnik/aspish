@@ -1,8 +1,11 @@
 # ASPish - Answer Set Programming for Python
 
-> aspish is an adjective meaning relating to, resembling, or having the qualities of an [asp](https://en.wikipedia.org/wiki/Asp_(snake))
 
-ASPish is a library that aims to resemble [ASP (Anser Set Programming)](https://en.wikipedia.org/wiki/Answer_set_programming) in a Python-friendly way.
+ASPish is a library that aims to provide some parts of [ASP (Anser Set Programming)](https://en.wikipedia.org/wiki/Answer_set_programming) in a Python-friendly way. All the heavy lifting is done by [clingo](https://github.com/potassco/clingo), a mature implementation of ASP. This library merely provides an interface that allows for a more streamlined usage from Python than the official Python bindings.
+
+ASP can be approximately viewed as the combination of query language that extends datalog, and a satisfiability solver. Both are integrated into a single coherent language which makes ASP particularly convenient when dealing with relational data.
+
+Currently, this project is in early stages and focuses primarily on the query language part.
 
 
 ## Basic Usage

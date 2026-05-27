@@ -4,6 +4,7 @@ from aspish.language import (
     Rule,
     Variable,
     BinaryOperation,
+    Comparison,
     to_ast,
 )
 from aspish import ast
@@ -28,7 +29,7 @@ class Test_Rule_syntax:
 class Test_Variable:
     def test_eq(self):
         actual = var('X') == var('Y')
-        assert isinstance(actual, BinaryOperation)
+        assert isinstance(actual, Comparison)
         assert actual.operator == ComparisonOperator.equal
         assert isinstance(actual.left, Variable)
         assert actual.left.name == 'X'

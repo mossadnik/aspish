@@ -81,3 +81,12 @@ class ASTNot(ASTNode):
     @property
     def children(self):
         yield self.arg
+
+
+@define(frozen=True, slots=True)
+class ASTPool(ASTNode):
+    values: tuple[ASTNode, ...]
+
+    @property
+    def children(self):
+        yield from self.values
