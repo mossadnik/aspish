@@ -4,7 +4,8 @@ from typing import Iterable
 from functools import singledispatch
 from clingo.symbol import Symbol, SymbolType
 from .ast import (
-    ASTBinaryOperator,
+    ASTBinaryOperation,
+    ASTComparison,
     ASTVariable,
     ASTLiteral,
     ASTFunction,
@@ -79,7 +80,7 @@ def _(obj: ASTNot) -> str:
 
 
 @translate.register
-def _(obj: ASTBinaryOperator) -> str:
+def _(obj: ASTComparison | ASTBinaryOperation) -> str:
     left = translate(obj.left)
     right = translate(obj.right)
     return f'{left} {obj.name} {right}'

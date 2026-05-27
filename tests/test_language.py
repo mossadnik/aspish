@@ -1,10 +1,9 @@
 from aspish import predicate, var
+from aspish.const import ComparisonOperator, BinaryOperator
 from aspish.language import (
     Rule,
     Variable,
-    Expression,
-    OperatorName,
-    BinaryOperator,
+    BinaryOperation,
     to_ast,
 )
 from aspish import ast
@@ -29,8 +28,8 @@ class Test_Rule_syntax:
 class Test_Variable:
     def test_eq(self):
         actual = var('X') == var('Y')
-        assert isinstance(actual, BinaryOperator)
-        assert actual.operator == OperatorName.equal
+        assert isinstance(actual, BinaryOperation)
+        assert actual.operator == ComparisonOperator.equal
         assert isinstance(actual.left, Variable)
         assert actual.left.name == 'X'
         assert isinstance(actual.right, Variable)
@@ -63,9 +62,23 @@ class Test_to_ast:
         )
         assert actual == expected
 
-    def test_BinaryOperator(self):
-        assert to_ast(var('X') == 1) == ast.ASTBinaryOperator(
-            name=OperatorName.equal,
+    def test_Comparison(self):
+        assert to_ast(var('X') == 1) == ast.ASTComparison(
+            name=ComparisonOperator.equal,
             left=ast.ASTVariable('X'),
             right=ast.ASTLiteral(1)
+        )
+
+    def test_BinaryOperation(self):
+        assert to_ast(var('X') + 1) == ast.ASTBinaryOperation(
+            name=BinaryOperator.plus,
+            left=ast.ASTVariable('X'),
+            right=ast.ASTLiteral(1)
+        )
+
+    def test_BinaryOperation_right(self):
+        assert to_ast(1 - var('X')) == ast.ASTBinaryOperation(
+            name=BinaryOperator.minus,
+            left=ast.ASTLiteral(1),
+            right=ast.ASTVariable('X')
         )

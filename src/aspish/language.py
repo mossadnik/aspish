@@ -1,7 +1,7 @@
 from typing import Generator
 from functools import singledispatch
 from attrs import define, fields
-from .const import OperatorName
+from .const import ComparisonOperator, BinaryOperator
 from . import ast
 
 
@@ -12,27 +12,39 @@ class Expression:
         yield from ()
 
     def __eq__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperator(OperatorName.equal, self, other)
+        return BinaryOperation(ComparisonOperator.equal, self, other)
 
     def __ne__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperator(OperatorName.not_equal, self, other)
+        return BinaryOperation(ComparisonOperator.not_equal, self, other)
 
     def __lt__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperator(OperatorName.less_than, self, other)
+        return BinaryOperation(ComparisonOperator.less_than, self, other)
 
     def __le__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperator(OperatorName.less_than_or_equal, self, other)
+        return BinaryOperation(ComparisonOperator.less_than_or_equal, self, other)
 
     def __gt__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperator(OperatorName.greater_than, self, other)
+        return BinaryOperation(ComparisonOperator.greater_than, self, other)
 
     def __ge__(self, other: 'Expression | int | str') -> 'Expression':
-        return BinaryOperator(OperatorName.greater_than_or_equal, self, other)
+        return BinaryOperation(ComparisonOperator.greater_than_or_equal, self, other)
+
+    def __add__(self, other: 'Expression | int') -> 'Expression':
+        return BinaryOperation(BinaryOperator.plus, self, other)
+
+    def __radd__(self, other: 'Expression | int') -> 'Expression':
+        return BinaryOperation(BinaryOperator.plus, other, self)
+
+    def __sub__(self, other: 'Expression | int') -> 'Expression':
+        return BinaryOperation(BinaryOperator.minus, self, other)
+
+    def __rsub__(self, other: 'Expression | int') -> 'Expression':
+        return BinaryOperation(BinaryOperator.minus, other, self)
 
 
 @define(frozen=True, eq=False, order=False)
-class BinaryOperator(Expression):
-    operator: OperatorName
+class BinaryOperation(Expression):
+    operator: ComparisonOperator | BinaryOperator
     left: Expression | int | str
     right: Expression | int | str
 
@@ -111,9 +123,18 @@ def _(obj: Not) -> ast.ASTNode:
 
 
 @to_ast.register
-def _(obj: BinaryOperator) -> ast.ASTNode:
-    return ast.ASTBinaryOperator(
-        name=obj.operator,
-        left=to_ast(obj.left),
-        right=to_ast(obj.right)
-    )
+def _(obj: BinaryOperation) -> ast.ASTNode:
+    if isinstance(obj.operator, ComparisonOperator):
+        return ast.ASTComparison(
+            name=obj.operator,
+            left=to_ast(obj.left),
+            right=to_ast(obj.right)
+        )
+    elif isinstance(obj.operator, BinaryOperator):
+        return ast.ASTBinaryOperation(
+            name=obj.operator,
+            left=to_ast(obj.left),
+            right=to_ast(obj.right)
+        )
+    else:
+        raise AttributeError(f'Invalid binary operator: {obj.operator}')

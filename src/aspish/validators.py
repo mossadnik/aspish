@@ -10,8 +10,8 @@ from .language import (
     Rule,
     Variable,
     Expression,
-    BinaryOperator,
-    OperatorName,
+    BinaryOperation,
+    ComparisonOperator,
     BLANK,
 )
 from . import ast
@@ -92,7 +92,7 @@ def validate_rule(rule: Rule) -> None:
         raise InvalidStatement(f'BLANK variable "_" in rule head: {rule}')
     bound_vars = set().union(*(get_atom_variables(a) for a in iter_rule_atoms(rule, head=False, negative=False)))
     for expr in rule.body:
-        if not isinstance(expr, BinaryOperator) or expr.operator != OperatorName.equal:
+        if not isinstance(expr, BinaryOperation) or expr.operator != ComparisonOperator.equal:
             continue
         left_bound = not isinstance(expr.left, Variable) or expr.left.name in bound_vars
         right_bound = not isinstance(expr.right, Variable) or expr.right.name in bound_vars
@@ -106,17 +106,17 @@ def validate_rule(rule: Rule) -> None:
 
 
 BOOLEAN_OPERATORS = {
-    OperatorName.equal,
-    OperatorName.not_equal,
-    OperatorName.less_than,
-    OperatorName.less_than_or_equal,
-    OperatorName.greater_than,
-    OperatorName.greater_than_or_equal
+    ComparisonOperator.equal,
+    ComparisonOperator.not_equal,
+    ComparisonOperator.less_than,
+    ComparisonOperator.less_than_or_equal,
+    ComparisonOperator.greater_than,
+    ComparisonOperator.greater_than_or_equal
 }
 
 
 def validate_expression(expr: Expression | Variable | str | int):
     if not isinstance(expr, Expression):
         return
-    if any(isinstance(a, BinaryOperator) and a.operator in BOOLEAN_OPERATORS for a in expr.children):
+    if any(isinstance(a, BinaryOperation) and a.operator in BOOLEAN_OPERATORS for a in expr.children):
         raise InvalidStatement(f'Boolean operators not at top level of expression: {expr}')

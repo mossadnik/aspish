@@ -1,6 +1,6 @@
 from typing import Generator
 from attrs import define
-from .const import OperatorName
+from .const import ComparisonOperator, BinaryOperator
 
 
 @define(frozen=True, slots=True)
@@ -51,8 +51,20 @@ class ASTRule(ASTNode):
 
 
 @define(frozen=True, slots=True)
-class ASTBinaryOperator(ASTNode):
-    name: OperatorName
+class ASTComparison(ASTNode):
+    name: ComparisonOperator
+    left: ASTNode
+    right: ASTNode
+
+    @property
+    def children(self):
+        yield self.left
+        yield self.right
+
+
+@define(frozen=True, slots=True)
+class ASTBinaryOperation(ASTNode):
+    name: BinaryOperator
     left: ASTNode
     right: ASTNode
 

@@ -55,7 +55,24 @@ class Test_translate:
         [operator.le, '<='],
         [operator.gt, '>'],
         [operator.ge, '>='],
+        [operator.add, '+'],
+        [operator.sub, '-'],
     ])
     def test_binary_operator(self, op, expected):
         X, Y = map(var, 'XY')
         assert translate(to_ast(op(X, Y))) == f'X {expected} Y'
+        assert translate(to_ast(op(X, 1))) == f'X {expected} 1'
+
+    @pytest.mark.parametrize('op, expected', [
+        [operator.eq, 'X = 1'],
+        [operator.ne, 'X != 1'],
+        [operator.lt, 'X > 1'],
+        [operator.le, 'X >= 1'],
+        [operator.gt, 'X < 1'],
+        [operator.ge, 'X <= 1'],
+        [operator.add, '1 + X'],
+        [operator.sub, '1 - X'],
+    ])
+    def test_binary_operator_right(self, op, expected):
+        X = var('X')
+        assert translate(to_ast(op(1, X))) == expected
