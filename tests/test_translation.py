@@ -8,6 +8,10 @@ from aspish.ast import ASTVariable
 from aspish import not_, predicate, var
 
 
+def translates_to(expr, text: str) -> None:
+    assert translate(to_ast(expr)) == text
+
+
 class Test_translate:
     def test_string_printable_characters(self):
         """Some characters in the ASCII range need separate serde due to escaping in clingo.
@@ -77,6 +81,21 @@ class Test_translate:
         X = var('X')
         assert translate(to_ast(op(1, X))) == expected
 
+    def test_unary_minus(self):
+        X = var('X')
+        assert translate(to_ast(X)) == '-X'
+
     def test_variable_isin(self):
         X, Y = map(var, 'XY')
         assert translate(to_ast(X.isin(1, Y, 'a'))) == 'X = (1;Y;"a")'
+
+
+class Test_arithmetic_parens:
+    """Tests that parens are added in arithmetic where needed."""
+    def test_unary_minus_on_binary_operator(self):
+        X = var('X')
+        assert translate(to_ast(-(X + 1))) == '-(X + 1)'
+
+    def test_unary_minus_on_comparison(self):
+        X, Y = map(var, 'XY')
+        translates_to(-X == Y, '-X = Y')

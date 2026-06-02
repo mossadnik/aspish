@@ -13,3 +13,7 @@ class ComparisonOperator(StrEnum):
 class BinaryOperator(StrEnum):
     plus = '+'
     minus = '-'
+
+
+class UnaryOperator(StrEnum):
+    minus = '-'

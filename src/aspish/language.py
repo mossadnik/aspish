@@ -1,7 +1,7 @@
 from typing import Generator
 from functools import singledispatch
 from attrs import define, fields
-from .const import ComparisonOperator, BinaryOperator
+from .const import ComparisonOperator, BinaryOperator, UnaryOperator
 from . import ast
 
 
@@ -41,6 +41,9 @@ class Expression:
     def __rsub__(self, other: 'Expression | int') -> 'Expression':
         return BinaryOperation(BinaryOperator.minus, other, self)
 
+    def __neg__(self) -> 'Expression':
+        return UnaryOperation(UnaryOperator.minus, self)
+
     def isin(self, *values: 'Expression | int | str') -> 'Comparison':
         return Comparison(ComparisonOperator.equal, self, Pool(values))
 
@@ -48,6 +51,16 @@ class Expression:
 @define(frozen=True, eq=False, order=False)
 class Pool(Expression):
     values: tuple[Expression | str | int, ...]
+
+
+@define(frozen=True, eq=False, order=False)
+class UnaryOperation(Expression):
+    operator: UnaryOperator
+    arg: Expression
+
+    @property
+    def children(self) -> Generator:
+        yield self.arg
 
 
 @define(frozen=True, eq=False, order=False)
@@ -163,3 +176,8 @@ def _(obj: Comparison) -> ast.ASTNode:
 @to_ast.register
 def _(obj: Pool) -> ast.ASTNode:
     return ast.ASTPool(tuple(map(to_ast, obj.values)))
+
+
+@to_ast.register
+def _(obj: UnaryOperation) -> ast.ASTNode:
+    return ast.ASTUnaryOperation(obj.operator, to_ast(obj.arg))

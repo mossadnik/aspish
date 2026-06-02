@@ -12,6 +12,7 @@ from .ast import (
     ASTNot,
     ASTPool,
     ASTRule,
+    ASTUnaryOperation,
 )
 from .language import Atom
 from .validators import (
@@ -91,6 +92,14 @@ def _(obj: ASTComparison | ASTBinaryOperation) -> str:
 def _(obj: ASTPool) -> str:
     values = ";".join(map(translate, obj.values))
     return f'({values})'
+
+
+@translate.register
+def _(obj: ASTUnaryOperation) -> str:
+    arg = translate(obj.arg)
+    if isinstance(obj.arg, ASTBinaryOperation):
+        arg = f'({arg})'
+    return f'{obj.operator}{arg}'
 
 
 def show(obj: type[Atom]) -> str:

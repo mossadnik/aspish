@@ -1,6 +1,6 @@
 from typing import Generator
 from attrs import define
-from .const import ComparisonOperator, BinaryOperator
+from .const import ComparisonOperator, BinaryOperator, UnaryOperator
 
 
 @define(frozen=True, slots=True)
@@ -90,3 +90,13 @@ class ASTPool(ASTNode):
     @property
     def children(self):
         yield from self.values
+
+
+@define(frozen=True, slots=True)
+class ASTUnaryOperation(ASTNode):
+    operator: UnaryOperator
+    arg: ASTNode
+
+    @property
+    def children(self) -> Generator[ASTNode, None, None]:
+        yield self.arg
