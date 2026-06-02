@@ -72,9 +72,12 @@ def _(obj: ASTFunction) -> str:
 
 @translate.register
 def _(obj: ASTRule) -> str:
-    head = translate(obj.head)
+    if obj.head is not None:
+        head = translate(obj.head) + ' '
+    else:
+        head = ''
     body = map(translate, obj.body)
-    return f'{head} :- {ut.csv(body)}'
+    return f'{head}:- {ut.csv(body)}'
 
 
 @translate.register

@@ -1,6 +1,6 @@
 from typing import Iterable
 from attrs import make_class, field
-from .language import Variable, Atom, BLANK, Not
+from .language import Variable, Atom, Rule, BLANK, Not, Comparison
 from .validators import validate_predicate_name, validate_variable_name
 
 
@@ -54,5 +54,10 @@ def predicate(name: str, attributes: Iterable[str]) -> type[Atom]:
     )
 
 
-def not_(arg: Atom):
+def not_(arg: Atom) -> Not:
     return Not(arg)
+
+
+def constraint(*body: Atom | Not | Comparison) -> Rule:
+    """A constraint is a rule that must not hold."""
+    return Rule(head=None, body=body)

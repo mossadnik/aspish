@@ -1,5 +1,5 @@
 import pytest
-from aspish import Solver, predicate, var, not_
+from aspish import Solver, predicate, var, not_, constraint
 from aspish.validators import InvalidStatement
 
 
@@ -60,6 +60,15 @@ class Test_basic_usage:
         sol.add(a(X) <= X.isin(1, 2, 'x'))
         sol.solve()
         assert set(sol.get(a)) == {a(1), a(2), a('x')}
+
+    def test_returns_False_if_unsat(self):
+        sol = Solver()
+        a = predicate('a', ('x',))
+        sol.add(
+            a(1),
+            constraint(a(1))
+        )
+        assert not sol.solve()
 
 
 class Test_Solver_Interface:

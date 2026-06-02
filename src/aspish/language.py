@@ -105,7 +105,7 @@ class Not:
 
 @define(frozen=True)
 class Rule:
-    head: Atom
+    head: Atom | None
     body: tuple[Atom | Not | Comparison, ...]
 
 
@@ -130,7 +130,7 @@ def _(obj: Atom) -> ast.ASTNode:
 
 @to_ast.register
 def _(obj: Rule) -> ast.ASTRule:
-    head = to_ast(obj.head)
+    head = to_ast(obj.head) if obj.head is not None else None
     body = map(to_ast, obj.body)
     return ast.ASTRule(head, tuple(body))
 

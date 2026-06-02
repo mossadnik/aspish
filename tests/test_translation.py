@@ -5,7 +5,7 @@ import operator
 from aspish.translation import translate, deserialize
 from aspish.language import to_ast
 from aspish.ast import ASTVariable
-from aspish import not_, predicate, var
+from aspish import not_, predicate, var, constraint
 
 
 def translates_to(expr, text: str) -> None:
@@ -92,6 +92,11 @@ class Test_translate:
     def test_variable_between(self):
         X = var('X')
         translates_to(X.between(1, 2), 'X = 1..2')
+
+    def test_constraint(self):
+        a = predicate('a', ('x',))
+        X = var('X')
+        translates_to(constraint(a(X), X > 1), ':- a(X), X > 1')
 
 
 class Test_arithmetic_parens:

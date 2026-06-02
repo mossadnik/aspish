@@ -41,12 +41,13 @@ class ASTFunction(ASTNode):
 
 @define(frozen=True, slots=True)
 class ASTRule(ASTNode):
-    head: ASTNode
+    head: ASTNode | None
     body: tuple[ASTNode, ...]
 
     @property
     def children(self) -> Generator[ASTNode, None, None]:
-        yield self.head
+        if self.head is not None:
+            yield self.head
         yield from self.children
 
 

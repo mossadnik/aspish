@@ -1,5 +1,6 @@
 from .solver import Solver
 from .functions import (
+    constraint,
     var,
     vars,
     predicate,
@@ -18,4 +19,5 @@ __all__ = [
     'predicate',
     'not_',
     'BLANK',
+    'constraint',
 ]
