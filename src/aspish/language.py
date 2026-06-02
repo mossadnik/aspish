@@ -1,4 +1,3 @@
-from typing import Generator
 from functools import singledispatch
 from attrs import define, fields
 from .const import ComparisonOperator, BinaryOperator, UnaryOperator
@@ -43,10 +42,19 @@ class Expression:
     def isin(self, *values: 'Expression | int | str') -> 'Comparison':
         return Comparison(ComparisonOperator.equal, self, Pool(values))
 
+    def between(self, min_value: int, max_value: int) -> 'Comparison':
+        return Comparison(ComparisonOperator.equal, self, Interval(min_value, max_value))
+
 
 @define(frozen=True, eq=False, order=False)
 class Pool(Expression):
     values: tuple[Expression | str | int, ...]
+
+
+@define(frozen=True, eq=False, order=False)
+class Interval(Expression):
+    min_value: int
+    max_value: int
 
 
 @define(frozen=True, eq=False, order=False)
@@ -158,6 +166,11 @@ def _(obj: Comparison) -> ast.ASTNode:
 @to_ast.register
 def _(obj: Pool) -> ast.ASTNode:
     return ast.ASTPool(tuple(map(to_ast, obj.values)))
+
+
+@to_ast.register
+def _(obj: Interval) -> ast.ASTNode:
+    return ast.ASTInterval(to_ast(obj.min_value), to_ast(obj.max_value))
 
 
 @to_ast.register

@@ -35,7 +35,7 @@ class ASTFunction(ASTNode):
         return (self.name, self.arity)
 
     @property
-    def children(self):
+    def children(self) -> Generator[ASTNode, None, None]:
         yield from self.arguments
 
 
@@ -57,7 +57,7 @@ class ASTComparison(ASTNode):
     right: ASTNode
 
     @property
-    def children(self):
+    def children(self) -> Generator[ASTNode, None, None]:
         yield self.left
         yield self.right
 
@@ -69,7 +69,7 @@ class ASTBinaryOperation(ASTNode):
     right: ASTNode
 
     @property
-    def children(self):
+    def children(self) -> Generator[ASTNode, None, None]:
         yield self.left
         yield self.right
 
@@ -79,7 +79,7 @@ class ASTNot(ASTNode):
     arg: ASTNode
 
     @property
-    def children(self):
+    def children(self) -> Generator[ASTNode, None, None]:
         yield self.arg
 
 
@@ -88,8 +88,14 @@ class ASTPool(ASTNode):
     values: tuple[ASTNode, ...]
 
     @property
-    def children(self):
+    def children(self) -> Generator[ASTNode, None, None]:
         yield from self.values
+
+
+@define(frozen=True, slots=True)
+class ASTInterval(ASTNode):
+    min_value: ASTNode
+    max_value: ASTNode
 
 
 @define(frozen=True, slots=True)

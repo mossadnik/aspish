@@ -83,18 +83,22 @@ class Test_translate:
 
     def test_unary_minus(self):
         X = var('X')
-        assert translate(to_ast(-X)) == '-X'
+        translates_to(-X, '-X')
 
     def test_variable_isin(self):
         X, Y = map(var, 'XY')
-        assert translate(to_ast(X.isin(1, Y, 'a'))) == 'X = (1;Y;"a")'
+        translates_to(X.isin(1, Y, 'a'), 'X = (1;Y;"a")')
+
+    def test_variable_between(self):
+        X = var('X')
+        translates_to(X.between(1, 2), 'X = 1..2')
 
 
 class Test_arithmetic_parens:
     """Tests that parens are added in arithmetic where needed."""
     def test_unary_minus_on_binary_operator(self):
         X = var('X')
-        assert translate(to_ast(-(X + 1))) == '-(X + 1)'
+        translates_to(-(X + 1), '-(X + 1)')
 
     def test_unary_minus_on_comparison(self):
         X, Y = map(var, 'XY')

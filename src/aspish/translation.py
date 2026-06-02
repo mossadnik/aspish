@@ -9,6 +9,7 @@ from .ast import (
     ASTVariable,
     ASTLiteral,
     ASTFunction,
+    ASTInterval,
     ASTNot,
     ASTPool,
     ASTRule,
@@ -92,6 +93,13 @@ def _(obj: ASTComparison | ASTBinaryOperation) -> str:
 def _(obj: ASTPool) -> str:
     values = ";".join(map(translate, obj.values))
     return f'({values})'
+
+
+@translate.register
+def _(obj: ASTInterval) -> str:
+    min_value = translate(obj.min_value)
+    max_value = translate(obj.max_value)
+    return f'{min_value}..{max_value}'
 
 
 @translate.register
