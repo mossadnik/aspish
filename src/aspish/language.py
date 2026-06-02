@@ -7,10 +7,6 @@ from . import ast
 
 @define(frozen=True, eq=False, order=False)
 class Expression:
-    @property
-    def children(self) -> Generator:
-        yield from ()
-
     def __eq__(self, other: 'Expression | int | str') -> 'Comparison':
         return Comparison(ComparisonOperator.equal, self, other)
 
@@ -58,10 +54,6 @@ class UnaryOperation(Expression):
     operator: UnaryOperator
     arg: Expression
 
-    @property
-    def children(self) -> Generator:
-        yield self.arg
-
 
 @define(frozen=True, eq=False, order=False)
 class BinaryOperation(Expression):
@@ -69,22 +61,12 @@ class BinaryOperation(Expression):
     left: Expression | int | str
     right: Expression | int | str
 
-    @property
-    def children(self) -> Generator:
-        yield self.left
-        yield self.right
-
 
 @define(frozen=True, eq=False, order=False)
 class Comparison:
     operator: ComparisonOperator
     left: Expression | int | str
     right: Expression | int | str
-
-    @property
-    def children(self) -> Generator:
-        yield self.left
-        yield self.right
 
 
 @define(frozen=True, eq=False, order=False)

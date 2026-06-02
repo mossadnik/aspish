@@ -43,12 +43,14 @@ class Test_basic_usage:
         sol.add(
             result('plus', L + R) <= (left(L), right(R)),
             result('minus', L - R) <= (left(L), right(R)),
+            result('uminus', -R) <= right(R),
         )
         sol.solve()
         actual = {r for r in sol.get(result)}
         assert actual == {
             result('plus', 9),
             result('minus', 5),
+            result('uminus', -2),
         }
 
     def test_isin(self):

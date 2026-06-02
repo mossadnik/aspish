@@ -83,7 +83,7 @@ class Test_translate:
 
     def test_unary_minus(self):
         X = var('X')
-        assert translate(to_ast(X)) == '-X'
+        assert translate(to_ast(-X)) == '-X'
 
     def test_variable_isin(self):
         X, Y = map(var, 'XY')

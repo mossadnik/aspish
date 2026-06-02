@@ -1,13 +1,32 @@
+import pytest
 from aspish import predicate, var
 from aspish.const import ComparisonOperator, BinaryOperator
 from aspish.language import (
     Rule,
     Variable,
-    BinaryOperation,
     Comparison,
     to_ast,
 )
 from aspish import ast
+
+
+
+class Test_Atom_hashability:
+    def test_facts_are_hashable(self):
+        """Facts can only contain hashable types."""
+        a = predicate('a', ('x', 'y'))
+        a1 = a(123, 'abc')
+        a2 = a(123, 'abc')
+        a3 = a('abc', 123)
+        assert {a1, a2, a3} == {a1, a3}
+
+
+    def test_atoms_with_expressions_are_not_hashable(self):
+        """Expressions are not hashable due to overriding `==`."""
+        a = predicate('a', ('x', 'y'))
+        X = var('X')
+        with pytest.raises(TypeError):
+            hash(a(1, X))
 
 
 class Test_Rule_syntax:
