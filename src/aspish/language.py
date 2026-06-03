@@ -1,27 +1,33 @@
+from typing import TypeAlias
 from functools import singledispatch
 from attrs import define, fields
 from .const import ComparisonOperator, BinaryOperator, UnaryOperator
 from . import ast
 
 
+AnyExpression: TypeAlias = 'Expression | int | str | tuple[AnyExpression, ...]'
+Body: TypeAlias = 'Atom | Comparison | Not | tuple[Atom | Comparison | Not, ...]'
+BodyAtom: TypeAlias = 'Atom | Comparison | Not'
+
+
 @define(frozen=True, eq=False, order=False)
 class Expression:
-    def __eq__(self, other: 'Expression | int | str') -> 'Comparison':
+    def __eq__(self, other: AnyExpression) -> 'Comparison':
         return Comparison(ComparisonOperator.equal, self, other)
 
-    def __ne__(self, other: 'Expression | int | str') -> 'Comparison':
+    def __ne__(self, other: AnyExpression) -> 'Comparison':
         return Comparison(ComparisonOperator.not_equal, self, other)
 
-    def __lt__(self, other: 'Expression | int | str') -> 'Comparison':
+    def __lt__(self, other: AnyExpression) -> 'Comparison':
         return Comparison(ComparisonOperator.less_than, self, other)
 
-    def __le__(self, other: 'Expression | int | str') -> 'Comparison':
+    def __le__(self, other: AnyExpression) -> 'Comparison':
         return Comparison(ComparisonOperator.less_than_or_equal, self, other)
 
-    def __gt__(self, other: 'Expression | int | str') -> 'Comparison':
+    def __gt__(self, other: AnyExpression) -> 'Comparison':
         return Comparison(ComparisonOperator.greater_than, self, other)
 
-    def __ge__(self, other: 'Expression | int | str') -> 'Comparison':
+    def __ge__(self, other: AnyExpression) -> 'Comparison':
         return Comparison(ComparisonOperator.greater_than_or_equal, self, other)
 
     def __add__(self, other: 'Expression | int') -> 'Expression':
@@ -39,7 +45,7 @@ class Expression:
     def __neg__(self) -> 'Expression':
         return UnaryOperation(UnaryOperator.minus, self)
 
-    def isin(self, *values: 'Expression | int | str') -> 'Comparison':
+    def isin(self, *values: AnyExpression) -> 'Comparison':
         return Comparison(ComparisonOperator.equal, self, Pool(values))
 
     def between(self, min_value: int, max_value: int) -> 'Comparison':
@@ -48,7 +54,7 @@ class Expression:
 
 @define(frozen=True, eq=False, order=False)
 class Pool(Expression):
-    values: tuple[Expression | str | int, ...]
+    values: tuple[AnyExpression, ...]
 
 
 @define(frozen=True, eq=False, order=False)
@@ -66,15 +72,15 @@ class UnaryOperation(Expression):
 @define(frozen=True, eq=False, order=False)
 class BinaryOperation(Expression):
     operator: BinaryOperator
-    left: Expression | int | str
-    right: Expression | int | str
+    left: AnyExpression
+    right: AnyExpression
 
 
 @define(frozen=True, eq=False, order=False)
 class Comparison:
     operator: ComparisonOperator
-    left: Expression | int | str
-    right: Expression | int | str
+    left: AnyExpression
+    right: AnyExpression
 
 
 @define(frozen=True, eq=False, order=False)
@@ -92,7 +98,7 @@ class Atom:
    def __init__(self, *args, **kwargs):
        super().__init__()
 
-   def __le__(self, other: 'Atom | Not | Comparison | tuple[Atom | Not | Comparison, ...]') -> 'Rule':
+   def __le__(self, other: Body) -> 'Rule':
         if not isinstance(other, tuple):
             other = (other,)
         return Rule(self, other)
@@ -106,7 +112,7 @@ class Not:
 @define(frozen=True)
 class Rule:
     head: Atom | None
-    body: tuple[Atom | Not | Comparison, ...]
+    body: tuple[BodyAtom, ...]
 
 
 BLANK = Variable('_')
@@ -171,6 +177,11 @@ def _(obj: Pool) -> ast.ASTNode:
 @to_ast.register
 def _(obj: Interval) -> ast.ASTNode:
     return ast.ASTInterval(to_ast(obj.min_value), to_ast(obj.max_value))
+
+
+@to_ast.register
+def _(obj: tuple) -> ast.ASTNode:
+    return ast.ASTTuple(tuple(map(to_ast, obj)))
 
 
 @to_ast.register

@@ -94,6 +94,15 @@ class ASTPool(ASTNode):
 
 
 @define(frozen=True, slots=True)
+class ASTTuple(ASTNode):
+    values: tuple[ASTNode, ...]
+
+    @property
+    def children(self) -> Generator[ASTNode, None, None]:
+        yield from self.values
+
+
+@define(frozen=True, slots=True)
 class ASTInterval(ASTNode):
     min_value: ASTNode
     max_value: ASTNode

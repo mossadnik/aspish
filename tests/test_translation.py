@@ -98,6 +98,10 @@ class Test_translate:
         X = var('X')
         translates_to(constraint(a(X), X > 1), ':- a(X), X > 1')
 
+    def test_tuple(self):
+        X = var('X')
+        translates_to((X, 1), '(X, 1)')
+
 
 class Test_arithmetic_parens:
     """Tests that parens are added in arithmetic where needed."""

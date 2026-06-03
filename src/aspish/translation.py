@@ -13,6 +13,7 @@ from .ast import (
     ASTNot,
     ASTPool,
     ASTRule,
+    ASTTuple,
     ASTUnaryOperation,
 )
 from .language import Atom
@@ -113,6 +114,12 @@ def _(obj: ASTUnaryOperation) -> str:
     return f'{obj.operator}{arg}'
 
 
+@translate.register
+def _(obj: ASTTuple) -> str:
+    values = ', '.join(map(translate, obj.values))
+    return f'({values})'
+
+
 def show(obj: type[Atom]) -> str:
     name, arity = get_predicate_signature(obj)
     return f'#show {name}/{arity}'
@@ -129,11 +136,14 @@ class DeserializationError(ValueError):
 def deserialize(value: Symbol, predicates: dict[tuple[str, int], type[Atom]]):
     value_type = value.type
     if value_type == SymbolType.Function:
+        name = value.name
         arguments = value.arguments
+        if not name:
+            return tuple([deserialize(arg, predicates) for arg in arguments])
         try:
-            pred = predicates[(value.name, len(arguments))]
+            pred = predicates[(name, len(arguments))]
         except KeyError:
-            raise DeserializationError(f'Cannot deserialize predicate f{value.name}/{len(arguments)}')
+            raise DeserializationError(f'Cannot deserialize predicate f{name}/{len(arguments)}')
         return pred(*[deserialize(arg, predicates) for arg in arguments])
     elif value_type == SymbolType.String:
         return value.string.replace('\\t', '\t')

@@ -70,6 +70,15 @@ class Test_basic_usage:
         )
         assert not sol.solve()
 
+    def test_tuple_input_and_output(self):
+        """Test tuple input and output"""
+        solver = Solver()
+        X, Y = map(var, 'XY')
+        a = predicate('a', ('x',))
+        solver.add(a((X, Y)) <= (X == 1, Y.between(2, 3)))
+        solver.solve()
+        assert set(solver.get(a)) == {a((1, 2)), a((1, 3))}
+
 
 class Test_Solver_Interface:
     def test_add_allows_one_or_more_statements(self):
