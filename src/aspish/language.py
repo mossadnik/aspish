@@ -111,8 +111,21 @@ class Not:
 
 @define(frozen=True)
 class Rule:
-    head: Atom | None
+    head: 'Atom | Choice | None'
     body: tuple[BodyAtom, ...]
+
+
+@define(frozen=True, order=False)
+class Choice:
+    head: Atom
+    body: tuple[BodyAtom, ...]
+    at_least: int
+    at_most: int | None
+
+    def __le__(self, other: Body) -> Rule:
+        if not isinstance(other, tuple):
+            other = (other,)
+        return Rule(self, other)
 
 
 BLANK = Variable('_')
@@ -187,3 +200,13 @@ def _(obj: tuple) -> ast.ASTNode:
 @to_ast.register
 def _(obj: UnaryOperation) -> ast.ASTNode:
     return ast.ASTUnaryOperation(obj.operator, to_ast(obj.arg))
+
+
+@to_ast.register
+def _(obj: Choice) -> ast.ASTChoice:
+    return ast.ASTChoice(
+        head=to_ast(obj.head),
+        body=tuple(map(to_ast, obj.body)),
+        at_least=obj.at_least,
+        at_most=obj.at_most
+    )

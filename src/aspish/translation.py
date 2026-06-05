@@ -5,6 +5,7 @@ from functools import singledispatch
 from clingo.symbol import Symbol, SymbolType
 from .ast import (
     ASTBinaryOperation,
+    ASTChoice,
     ASTComparison,
     ASTVariable,
     ASTLiteral,
@@ -36,8 +37,12 @@ def _(obj: ASTVariable) -> str:
 
 @translate.register
 def _(obj: Atom) -> str:
-    args = map(translate, iter_atom_attributes(obj))
-    return f'{obj.__class__.__name__}({ut.csv(args)})'
+    args = tuple(map(translate, iter_atom_attributes(obj)))
+    func = obj.__class__.__name__
+    if args:
+        return f'{func}({ut.csv(args)})'
+    else:
+        return func
 
 
 STRING_ESCAPE = {
@@ -67,8 +72,11 @@ def _(obj: int) -> str:
 
 @translate.register
 def _(obj: ASTFunction) -> str:
-    args = map(translate, obj.arguments)
-    return f'{obj.name}({ut.csv(args)})'
+    if obj.arguments:
+        args = map(translate, obj.arguments)
+        return f'{obj.name}({ut.csv(args)})'
+    else:
+        return obj.name
 
 
 @translate.register
@@ -116,8 +124,19 @@ def _(obj: ASTUnaryOperation) -> str:
 
 @translate.register
 def _(obj: ASTTuple) -> str:
-    values = ', '.join(map(translate, obj.values))
+    values = ut.csv(map(translate, obj.values))
     return f'({values})'
+
+
+@translate.register
+def _(obj: ASTChoice) -> str:
+    head = translate(obj.head)
+    if obj.body:
+        body = f' : {ut.csv(map(translate, obj.body))}'
+    else:
+        body = ''
+    at_most = f' {obj.at_most}' if obj.at_most is not None else ''
+    return f'{obj.at_least} {{ {head}{body} }}{at_most}'
 
 
 def show(obj: type[Atom]) -> str:

@@ -103,6 +103,19 @@ class ASTTuple(ASTNode):
 
 
 @define(frozen=True, slots=True)
+class ASTChoice(ASTNode):
+    head: ASTNode
+    body: tuple[ASTNode, ...]
+    at_least: int
+    at_most: int | None
+
+    @property
+    def children(self) -> Generator[ASTNode, None, None]:
+        yield self.head
+        yield from self.body
+
+
+@define(frozen=True, slots=True)
 class ASTInterval(ASTNode):
     min_value: ASTNode
     max_value: ASTNode

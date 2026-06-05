@@ -5,7 +5,7 @@ import operator
 from aspish.translation import translate, deserialize
 from aspish.language import to_ast
 from aspish.ast import ASTVariable
-from aspish import not_, predicate, var, constraint
+from aspish import not_, predicate, var, constraint, choose
 
 
 def translates_to(expr, text: str) -> None:
@@ -41,6 +41,10 @@ class Test_translate:
         rel = predicate('a', ('a', 'b'))
         atom = rel(1, 'b')
         assert translate(atom) == 'a(1, "b")'
+
+    def test_atom_no_attributes(self):
+        a = predicate('a')
+        translates_to(a(), 'a')
 
     def test_rule(self):
         rel = predicate('a', ('a','b'))
@@ -112,3 +116,44 @@ class Test_arithmetic_parens:
     def test_unary_minus_on_comparison(self):
         X, Y = map(var, 'XY')
         translates_to(-X == Y, '-X = Y')
+
+
+class Test_choose:
+    def test_defaults(self):
+        a = predicate('a', ('x',))
+        X = var('X')
+        translates_to(
+            choose(a(X), X.between(1, 2)),
+            '0 { a(X) : X = 1..2 }'
+        )
+
+    def test_boundaries(self):
+        a = predicate('a', ('x',))
+        X = var('X')
+        translates_to(
+            choose(a(X), X.between(1, 2), 1, 1),
+            '1 { a(X) : X = 1..2 } 1'
+        )
+
+    def test_tuple_body(self):
+        a = predicate('a', ('x',))
+        X = var('X')
+        translates_to(
+            choose(a(X), (X > 0, X < 2), 1, 1),
+            '1 { a(X) : X > 0, X < 2 } 1'
+        )
+
+    def test_rule(self):
+        a = predicate('a', ('x',))
+        X = var('X')
+        translates_to(
+            choose(a(X), X > 0, 1, 1) <= X.between(1, 2),
+            '1 { a(X) : X > 0 } 1 :- X = 1..2'
+        )
+
+    def test_empty_body(self):
+        a = predicate('a')
+        translates_to(
+            choose(a(), (), 1, 1),
+            '1 { a } 1'
+        )

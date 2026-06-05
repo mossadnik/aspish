@@ -1,6 +1,16 @@
 from typing import Iterable
 from attrs import make_class, field
-from .language import Variable, Atom, Rule, BLANK, Not, BodyAtom, Expression
+from .language import (
+    Variable,
+    Atom,
+    Rule,
+    BLANK,
+    Not,
+    BodyAtom,
+    Body,
+    Expression,
+    Choice
+)
 from .validators import validate_predicate_name, validate_variable_name
 
 
@@ -36,8 +46,10 @@ class VariableFactory:
 vars = VariableFactory()
 
 
-def predicate(name: str, attributes: Iterable[str]) -> type[Atom]:
+def predicate(name: str, attributes: Iterable[str] | None = None) -> type[Atom]:
     validate_predicate_name(name)
+    if attributes is None:
+        attributes = ()
     return make_class(
         name,
         {
@@ -61,3 +73,9 @@ def not_(arg: Atom) -> Not:
 def constraint(*body: BodyAtom) -> Rule:
     """A constraint is a rule that must not hold."""
     return Rule(head=None, body=body)
+
+
+def choose(head: Atom, body: Body, at_least: int = 0, at_most: int | None = None) -> Choice:
+    if not isinstance(body, tuple):
+        body = (body,)
+    return Choice(head, body, at_least, at_most)

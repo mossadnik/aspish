@@ -1,5 +1,5 @@
 import pytest
-from aspish import Solver, predicate, var, not_, constraint
+from aspish import Solver, predicate, var, not_, constraint, choose
 from aspish.validators import InvalidStatement
 
 
@@ -71,7 +71,6 @@ class Test_basic_usage:
         assert not sol.solve()
 
     def test_tuple_input_and_output(self):
-        """Test tuple input and output"""
         solver = Solver()
         X, Y = map(var, 'XY')
         a = predicate('a', ('x',))
@@ -104,6 +103,19 @@ class Test_Solver_Interface:
             assert len(sol.get(b)) == 1
             assert len(sol.get(a)) == 0
 
+    def test_solve_choice(self):
+        """Choose three distinct numbers from 1..3"""
+        sol = Solver()
+        a = predicate('a', ('x',))
+        b = predicate('b', ('x',))
+        X, Y, Z = map(var, 'XYZ')
+        sol.add(
+            a(1),
+            choose(b(X), X.between(1, 3), at_least=1, at_most=1),
+            constraint(a(X), a(Y), b(Z), X + Y != Z)
+        )
+        assert sol.solve()
+        assert sol.get(b) == [b(2)]
 
 class Test_input_validation:
     def test_invalid_fact(self):

@@ -3,7 +3,7 @@ import itertools as it
 import clingo
 from clingo.symbol import SymbolType, Symbol
 from .translation import translate, deserialize, show, join_statements
-from .language import Atom, Rule, to_ast
+from .language import Atom, Rule, Choice, to_ast
 from .validators import validate_fact, get_predicate_signature
 
 
@@ -20,11 +20,13 @@ class Solver:
     def add(self, *statements) -> 'Solver':
         """Add one or more rules or facts."""
         for s in statements:
-            if isinstance(s, Rule):
+            if isinstance(s, (Rule, Choice)):
                 self._statements.append(to_ast(s))
             elif isinstance(s, Atom):
                 validate_fact(s)
                 self._facts.append(s)
+            else:
+                raise TypeError(f'Invalid type for statement: {type(s)}')
         return self
 
     def solve(

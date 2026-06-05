@@ -5,6 +5,7 @@ from .functions import (
     vars,
     predicate,
     not_,
+    choose,
 )
 from .language import BLANK
 
@@ -20,4 +21,5 @@ __all__ = [
     'not_',
     'BLANK',
     'constraint',
+    'choose',
 ]
