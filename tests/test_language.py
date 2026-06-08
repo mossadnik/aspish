@@ -66,17 +66,26 @@ class Test_to_ast:
 
     def test_Function(self):
         pred = predicate('a', ('x',))
-        assert to_ast(pred(123)) == ast.ASTFunction(name='a', arguments=(ast.ASTLiteral(123),))
+        assert to_ast(pred(123)) == ast.ASTFunction(
+            name='a',
+            arguments=(ast.ASTLiteral(123),),
+            source_cls=pred
+        )
 
     def test_Rule(self):
         pred = predicate('a', ('x',))
         actual = to_ast(pred(1) <= pred(2))
         expected = ast.ASTRule(
-            head=ast.ASTFunction(name='a', arguments=(ast.ASTLiteral(1),)),
+            head=ast.ASTFunction(
+                name='a',
+                arguments=(ast.ASTLiteral(1),),
+                source_cls=pred
+            ),
             body=(
                 ast.ASTFunction(
                     name='a',
-                    arguments=(ast.ASTLiteral(2),)
+                    arguments=(ast.ASTLiteral(2),),
+                    source_cls=pred
                 ),
             )
         )

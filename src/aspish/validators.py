@@ -36,6 +36,11 @@ def validate_predicate_name(name: str) -> None:
         raise InvalidStatement(f'Invalid predicate name: {name}')
 
 
-def validate_fact(atom: Atom) -> None:
-    if any(not isinstance(a, (int, str)) for a in iter_atom_attributes(atom)):
-        raise InvalidStatement(f'Invalid argument for fact: {atom}')
+def validate_fact(atom: Atom) -> set[type[Atom]]:
+    res = {type(atom),}
+    for a in iter_atom_attributes(atom):
+        if isinstance(a, Atom):
+            res.update(validate_fact(a))
+        elif not isinstance(a, (int, str)):
+            raise InvalidStatement(f'Invalid argument for fact: {atom}')
+    return res

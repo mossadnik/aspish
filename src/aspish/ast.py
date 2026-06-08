@@ -25,6 +25,7 @@ class ASTLiteral(ASTNode):
 class ASTFunction(ASTNode):
     name: str
     arguments: tuple[ASTNode, ...]
+    source_cls: type
 
     @property
     def arity(self) -> int:
@@ -48,7 +49,7 @@ class ASTRule(ASTNode):
     def children(self) -> Generator[ASTNode, None, None]:
         if self.head is not None:
             yield self.head
-        yield from self.children
+        yield from self.body
 
 
 @define(frozen=True, slots=True)
@@ -129,3 +130,27 @@ class ASTUnaryOperation(ASTNode):
     @property
     def children(self) -> Generator[ASTNode, None, None]:
         yield self.arg
+
+
+class ASTVisitor:
+    def visit(self, node: ASTNode) -> None:
+        node_type = type(node).__name__
+        visit_func = getattr(self, f'visit_{node_type}', None)
+        expand = True
+        if visit_func is not None:
+            expand = visit_func(node) or True
+        if expand:
+            for child in node.children:
+                self.visit(child)
+        leave_func = getattr(self, f'leave_{node_type}', None)
+        if leave_func is not None:
+            leave_func(node)
+
+
+class UsedFunctionClasses(ASTVisitor):
+    def __init__(self):
+        self.functions = set()
+
+    def visit_ASTFunction(self, node: ASTFunction) -> bool:
+        self.functions.add(node.source_cls)
+        return True

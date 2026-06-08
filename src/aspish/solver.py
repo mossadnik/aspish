@@ -5,6 +5,7 @@ from clingo.symbol import SymbolType, Symbol
 from .translation import translate, deserialize, show, join_statements
 from .language import Atom, Rule, Choice, to_ast
 from .validators import validate_fact, get_predicate_signature
+from .ast import UsedFunctionClasses
 
 
 class Solver:
@@ -16,14 +17,19 @@ class Solver:
         self._statements = []
         self._solved = False
         self._raw_model = None
+        self._functions = set()
 
     def add(self, *statements) -> 'Solver':
         """Add one or more rules or facts."""
         for s in statements:
             if isinstance(s, (Rule, Choice)):
-                self._statements.append(to_ast(s))
+                statement = to_ast(s)
+                visitor = UsedFunctionClasses()
+                visitor.visit(statement)
+                self._functions.update(visitor.functions)
+                self._statements.append(statement)
             elif isinstance(s, Atom):
-                validate_fact(s)
+                self._functions.update(validate_fact(s))
                 self._facts.append(s)
             else:
                 raise TypeError(f'Invalid type for statement: {type(s)}')
@@ -80,10 +86,12 @@ class Solver:
             If there is not model available because either the program has not been solved
             or the program is unsatisfiable.
         """
-        predicates = {get_predicate_signature(predicate): predicate}
+        target_signature = get_predicate_signature(predicate)
+        predicates = {get_predicate_signature(f): f for f in self._functions}
+        predicates[target_signature] = predicate
         return [
             cast(Atom, deserialize(symbol, predicates))
             for symbol in self.raw_model
             if symbol.type == SymbolType.Function
-            and (symbol.name, len(symbol.arguments)) in predicates
+            and (symbol.name, len(symbol.arguments)) == target_signature
         ]

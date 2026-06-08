@@ -137,14 +137,14 @@ def to_ast(obj) -> ast.ASTNode:
 
 
 @to_ast.register
-def _(obj: Variable):
+def _(obj: Variable) -> ast.ASTNode:
     return ast.ASTVariable(obj.name)
 
 
 @to_ast.register
 def _(obj: Atom) -> ast.ASTNode:
     arguments = map(to_ast, (getattr(obj, a.name) for a in fields(obj)))
-    return ast.ASTFunction(name=obj.__class__.__name__, arguments=tuple(arguments))
+    return ast.ASTFunction(name=obj.__class__.__name__, arguments=tuple(arguments), source_cls=obj.__class__)
 
 
 @to_ast.register

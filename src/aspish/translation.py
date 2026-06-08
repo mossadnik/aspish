@@ -162,7 +162,7 @@ def deserialize(value: Symbol, predicates: dict[tuple[str, int], type[Atom]]):
         try:
             pred = predicates[(name, len(arguments))]
         except KeyError:
-            raise DeserializationError(f'Cannot deserialize predicate f{name}/{len(arguments)}')
+            raise DeserializationError(f'Cannot deserialize predicate {name}/{len(arguments)}')
         return pred(*[deserialize(arg, predicates) for arg in arguments])
     elif value_type == SymbolType.String:
         return value.string.replace('\\t', '\t')

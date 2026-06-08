@@ -103,6 +103,14 @@ class Test_Solver_Interface:
             assert len(sol.get(b)) == 1
             assert len(sol.get(a)) == 0
 
+    def test_deserializes_nested_functions(self):
+        sol = Solver()
+        a = predicate('a', ('x',))
+        b = predicate('b', ('x',))
+        sol.add(a(b(1)))
+        assert sol.solve()
+        assert sol.get(a) == [a(b(1))]
+
     def test_solve_choice(self):
         """Choose three distinct numbers from 1..3"""
         sol = Solver()

@@ -34,7 +34,12 @@ class Test_validate_fact:
     @pytest.mark.parametrize('value', [1, 'a'])
     def test_accepts(self, value):
         a = predicate('a', ('x',))
-        assert validate_fact(a(value)) is None
+        assert validate_fact(a(value)) == {a,}
+
+    def test_accepts_nested_functions(self):
+        a = predicate('a', ('x',))
+        b = predicate('b', ('x',))
+        assert validate_fact(a(b(1))) == {a, b}
 
     @pytest.mark.parametrize('value', [None, 1.1, var('X')])
     def test_rejects(self, value):
