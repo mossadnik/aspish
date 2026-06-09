@@ -20,9 +20,10 @@ def var(name: str) -> Variable:
 
 
 class VariableSequence:
-    def __init__(self):
+    def __init__(self, prefix: str = 'X'):
+        validate_variable_name(prefix)
         self.idx = 1
-        self.prefix = 'X'
+        self.prefix = prefix
 
     def __call__(self, num: int) -> tuple[Variable, ...]:
         """Create num new variables with names X1, X2, ...

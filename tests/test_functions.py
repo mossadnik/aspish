@@ -1,4 +1,6 @@
+import pytest
 from aspish.functions import VariableSequence
+from aspish.validators import InvalidStatement
 
 
 class Test_VariableSequence:
@@ -16,3 +18,13 @@ class Test_VariableSequence:
         vars.reset()
         x2 = vars(1)[0]
         assert x1.name == x2.name
+
+    def test_variable_names_start_with_prefix(self):
+        vars = VariableSequence('Abc')
+        x1, x2 = vars(2)
+        assert x1.name.startswith('Abc')
+        assert x2.name.startswith('Abc')
+
+    def test_raised_if_invalid_prefix(self):
+        with pytest.raises(InvalidStatement):
+            VariableSequence('x')
