@@ -5,8 +5,7 @@ ASPish is a library that aims to provide some parts of [ASP (Anser Set Programmi
 
 ASP can be approximately viewed as the combination of query language that extends datalog, and a satisfiability solver. Both are integrated into a single coherent language which makes ASP particularly convenient when dealing with relational data.
 
-Currently, this project is in early stages and focuses primarily on the query language part.
-
+This project is in early stages and is not stable.
 
 ## Basic Usage
 
