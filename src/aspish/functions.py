@@ -19,7 +19,7 @@ def var(name: str) -> Variable:
     return Variable(name)
 
 
-class VariableFactory:
+class VariableSequence:
     def __init__(self):
         self.idx = 1
         self.prefix = 'X'
@@ -41,9 +41,6 @@ class VariableFactory:
     def reset(self) -> None:
         """Reset the variable counter to one."""
         self.idx = 1
-
-
-vars = VariableFactory()
 
 
 def predicate(name: str, attributes: Iterable[str] | None = None) -> type[Atom]:

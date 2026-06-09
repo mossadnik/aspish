@@ -2,7 +2,7 @@ from .solver import Solver
 from .functions import (
     constraint,
     var,
-    vars,
+    VariableSequence,
     predicate,
     not_,
     choose,
@@ -16,7 +16,7 @@ __version__ = '0.6.0'
 __all__ = [
     'Solver',
     'var',
-    'vars',
+    'VariableSequence',
     'predicate',
     'not_',
     'BLANK',
