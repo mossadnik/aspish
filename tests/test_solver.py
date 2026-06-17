@@ -1,5 +1,5 @@
 import pytest
-from aspish import Solver, predicate, var, not_, constraint, choose
+from aspish import Solver, predicate, var, not_, constraint, choose, tuple_
 from aspish.validators import InvalidStatement
 
 
@@ -74,7 +74,7 @@ class Test_basic_usage:
         solver = Solver()
         X, Y = map(var, 'XY')
         a = predicate('a', ('x',))
-        solver.add(a((X, Y)) <= (X == 1, Y.between(2, 3)))
+        solver.add(a(tuple_(X, Y)) <= (X == 1, Y.between(2, 3)))
         solver.solve()
         assert set(solver.get(a)) == {a((1, 2)), a((1, 3))}
 

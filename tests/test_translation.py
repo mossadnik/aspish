@@ -5,7 +5,7 @@ import operator
 from aspish.translation import translate, deserialize
 from aspish.language import to_ast
 from aspish.ast import ASTVariable
-from aspish import not_, predicate, var, constraint, choose
+from aspish import not_, predicate, var, constraint, choose, tuple_
 
 
 def translates_to(expr, text: str) -> None:
@@ -117,7 +117,7 @@ class Test_translate:
 
     def test_tuple(self):
         X = var('X')
-        translates_to((X, 1), '(X, 1)')
+        translates_to(tuple_(X, 1), '(X, 1)')
 
 
 class Test_arithmetic_parens:

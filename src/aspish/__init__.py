@@ -6,6 +6,7 @@ from .functions import (
     predicate,
     not_,
     choose,
+    tuple_,
 )
 from .language import BLANK
 
@@ -22,4 +23,5 @@ __all__ = [
     'BLANK',
     'constraint',
     'choose',
+    'tuple_',
 ]

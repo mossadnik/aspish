@@ -9,7 +9,8 @@ from .language import (
     BodyAtom,
     Body,
     Expression,
-    Choice
+    Choice,
+    Tuple
 )
 from .validators import validate_predicate_name, validate_variable_name
 
@@ -74,3 +75,7 @@ def choose(head: Atom, body: Body, at_least: int = 0, at_most: int | None = None
     if not isinstance(body, tuple):
         body = (body,)
     return Choice(head, body, at_least, at_most)
+
+
+def tuple_(*args: Expression | Atom | int | str) -> Tuple:
+    return Tuple(args)

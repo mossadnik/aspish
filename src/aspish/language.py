@@ -5,7 +5,7 @@ from .const import ComparisonOperator, BinaryOperator, UnaryOperator
 from . import ast
 
 
-AnyExpression: TypeAlias = 'Expression | int | str | tuple[AnyExpression, ...]'
+AnyExpression: TypeAlias = 'Expression | int | str'
 Body: TypeAlias = 'Atom | Comparison | Not | tuple[Atom | Comparison | Not, ...]'
 BodyAtom: TypeAlias = 'Atom | Comparison | Not'
 
@@ -128,6 +128,10 @@ class Choice:
         return Rule(self, other)
 
 
+@dataclass(frozen=True, order=False, eq=False)
+class Tuple(Expression):
+    args: tuple
+
 BLANK = Variable('_')
 
 
@@ -193,8 +197,8 @@ def _(obj: Interval) -> ast.ASTNode:
 
 
 @to_ast.register
-def _(obj: tuple) -> ast.ASTNode:
-    return ast.ASTTuple(tuple(map(to_ast, obj)))
+def _(obj: Tuple) -> ast.ASTNode:
+    return ast.ASTTuple(tuple(map(to_ast, obj.args)))
 
 
 @to_ast.register
