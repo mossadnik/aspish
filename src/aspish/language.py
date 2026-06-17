@@ -1,6 +1,6 @@
 from typing import TypeAlias
 from functools import singledispatch
-from attrs import define, fields
+from dataclasses import dataclass, fields
 from .const import ComparisonOperator, BinaryOperator, UnaryOperator
 from . import ast
 
@@ -10,7 +10,7 @@ Body: TypeAlias = 'Atom | Comparison | Not | tuple[Atom | Comparison | Not, ...]
 BodyAtom: TypeAlias = 'Atom | Comparison | Not'
 
 
-@define(frozen=True, eq=False, order=False)
+@dataclass(frozen=True, eq=False, order=False)
 class Expression:
     def __eq__(self, other: AnyExpression) -> 'Comparison':
         return Comparison(ComparisonOperator.equal, self, other)
@@ -52,38 +52,38 @@ class Expression:
         return Comparison(ComparisonOperator.equal, self, Interval(min_value, max_value))
 
 
-@define(frozen=True, eq=False, order=False)
+@dataclass(frozen=True, eq=False, order=False)
 class Pool(Expression):
     values: tuple[AnyExpression, ...]
 
 
-@define(frozen=True, eq=False, order=False)
+@dataclass(frozen=True, eq=False, order=False)
 class Interval(Expression):
     min_value: int
     max_value: int
 
 
-@define(frozen=True, eq=False, order=False)
+@dataclass(frozen=True, eq=False, order=False)
 class UnaryOperation(Expression):
     operator: UnaryOperator
     arg: Expression
 
 
-@define(frozen=True, eq=False, order=False)
+@dataclass(frozen=True, eq=False, order=False)
 class BinaryOperation(Expression):
     operator: BinaryOperator
     left: AnyExpression
     right: AnyExpression
 
 
-@define(frozen=True, eq=False, order=False)
+@dataclass(frozen=True, eq=False, order=False)
 class Comparison:
     operator: ComparisonOperator
     left: AnyExpression
     right: AnyExpression
 
 
-@define(frozen=True, eq=False, order=False)
+@dataclass(frozen=True, eq=False, order=False)
 class Variable(Expression):
     """An input variable for building expressions and rules.
 
@@ -92,7 +92,7 @@ class Variable(Expression):
     name: str
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class Atom:
     # need args/kwargs so that static type checker does not complain about subclass constructor
    def __init__(self, *args, **kwargs):
@@ -104,18 +104,18 @@ class Atom:
         return Rule(self, other)
 
 
-@define(frozen=True)
+@dataclass(frozen=True)
 class Not:
     arg: Atom
 
 
-@define(frozen=True)
+@dataclass(frozen=True)
 class Rule:
     head: 'Atom | Choice | None'
     body: tuple[BodyAtom, ...]
 
 
-@define(frozen=True, order=False)
+@dataclass(frozen=True, order=False)
 class Choice:
     head: Atom
     body: tuple[BodyAtom, ...]

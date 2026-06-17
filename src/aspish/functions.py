@@ -1,5 +1,5 @@
 from typing import Iterable
-from attrs import make_class, field
+from dataclasses import make_dataclass, field
 from .language import (
     Variable,
     Atom,
@@ -48,15 +48,12 @@ def predicate(name: str, attributes: Iterable[str] | None = None) -> type[Atom]:
     validate_predicate_name(name)
     if attributes is None:
         attributes = ()
-    return make_class(
+    return make_dataclass(
         name,
-        {
-            a: field(
-                type=int | str | Expression | tuple[int | str | Expression, ...],
-                default=BLANK,
-            )
+        [
+            (a, int | str | Expression | tuple[int | str | Expression, ...], field(default_factory=lambda: BLANK))
             for a in attributes
-        },
+        ],
         bases=(Atom,),
         frozen=True,
         slots=True,

@@ -1,27 +1,27 @@
 from typing import Generator
-from attrs import define
+from dataclasses import dataclass
 from .const import ComparisonOperator, BinaryOperator, UnaryOperator
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTNode:
     @property
     def children(self) -> Generator['ASTNode', None, None]:
         yield from ()
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTVariable(ASTNode):
     """Internal hashable representation of Variable without dunder methods."""
     name: str
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTLiteral(ASTNode):
     value: int | str
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTFunction(ASTNode):
     name: str
     arguments: tuple[ASTNode, ...]
@@ -40,7 +40,7 @@ class ASTFunction(ASTNode):
         yield from self.arguments
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTRule(ASTNode):
     head: ASTNode | None
     body: tuple[ASTNode, ...]
@@ -52,7 +52,7 @@ class ASTRule(ASTNode):
         yield from self.body
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTComparison(ASTNode):
     name: ComparisonOperator
     left: ASTNode
@@ -64,7 +64,7 @@ class ASTComparison(ASTNode):
         yield self.right
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTBinaryOperation(ASTNode):
     name: BinaryOperator
     left: ASTNode
@@ -76,7 +76,7 @@ class ASTBinaryOperation(ASTNode):
         yield self.right
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTNot(ASTNode):
     arg: ASTNode
 
@@ -85,7 +85,7 @@ class ASTNot(ASTNode):
         yield self.arg
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTPool(ASTNode):
     values: tuple[ASTNode, ...]
 
@@ -94,7 +94,7 @@ class ASTPool(ASTNode):
         yield from self.values
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTTuple(ASTNode):
     values: tuple[ASTNode, ...]
 
@@ -103,7 +103,7 @@ class ASTTuple(ASTNode):
         yield from self.values
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTChoice(ASTNode):
     head: ASTNode
     body: tuple[ASTNode, ...]
@@ -116,13 +116,13 @@ class ASTChoice(ASTNode):
         yield from self.body
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTInterval(ASTNode):
     min_value: ASTNode
     max_value: ASTNode
 
 
-@define(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class ASTUnaryOperation(ASTNode):
     operator: UnaryOperator
     arg: ASTNode

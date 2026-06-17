@@ -1,7 +1,7 @@
 """Validation of language inputs."""
 
 import re
-from attrs import fields
+from dataclasses import fields
 from .language import (
     Atom,
 )
