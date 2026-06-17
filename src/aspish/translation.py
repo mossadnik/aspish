@@ -95,10 +95,17 @@ def _(obj: ASTNot) -> str:
 
 
 @translate.register
-def _(obj: ASTComparison | ASTBinaryOperation) -> str:
+def _(obj: ASTComparison) -> str:
     left = translate(obj.left)
     right = translate(obj.right)
     return f'{left} {obj.name} {right}'
+
+
+@translate.register
+def _(obj: ASTBinaryOperation) -> str:
+    left = translate(obj.left)
+    right = translate(obj.right)
+    return f'({left} {obj.name} {right})'
 
 
 @translate.register
@@ -117,8 +124,6 @@ def _(obj: ASTInterval) -> str:
 @translate.register
 def _(obj: ASTUnaryOperation) -> str:
     arg = translate(obj.arg)
-    if isinstance(obj.arg, ASTBinaryOperation):
-        arg = f'({arg})'
     return f'{obj.operator}{arg}'
 
 
