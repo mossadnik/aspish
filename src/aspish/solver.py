@@ -78,7 +78,7 @@ class Solver:
             raise AttributeError('Need to call solve before getting model results.')
         return self._raw_model
 
-    def get(self, predicate: type[Atom]) -> list[Atom]:
+    def get(self, func: type[Atom]) -> list[Atom]:
         """Get all instances of the specified type from the solver model.
 
         Raises:
@@ -86,11 +86,11 @@ class Solver:
             If there is not model available because either the program has not been solved
             or the program is unsatisfiable.
         """
-        target_signature = get_predicate_signature(predicate)
-        predicates = {get_predicate_signature(f): f for f in self._functions}
-        predicates[target_signature] = predicate
+        target_signature = get_predicate_signature(func)
+        functions = {get_predicate_signature(f): f for f in self._functions}
+        functions[target_signature] = func
         return [
-            cast(Atom, deserialize(symbol, predicates))
+            cast(Atom, deserialize(symbol, functions))
             for symbol in self.raw_model
             if symbol.type == SymbolType.Function
             and (symbol.name, len(symbol.arguments)) == target_signature

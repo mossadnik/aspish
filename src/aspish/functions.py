@@ -12,7 +12,7 @@ from .language import (
     Choice,
     Tuple
 )
-from .validators import validate_predicate_name, validate_variable_name
+from .validators import validate_function_name, validate_variable_name
 
 
 def var(name: str) -> Variable:
@@ -45,8 +45,8 @@ class VariableSequence:
         self.idx = 1
 
 
-def predicate(name: str, attributes: Iterable[str] | None = None) -> type[Atom]:
-    validate_predicate_name(name)
+def function_(name: str, attributes: Iterable[str] | None = None) -> type[Atom]:
+    validate_function_name(name)
     if attributes is None:
         attributes = ()
     return make_dataclass(

@@ -157,18 +157,18 @@ class DeserializationError(ValueError):
     pass
 
 
-def deserialize(value: Symbol, predicates: dict[tuple[str, int], type[Atom]]):
+def deserialize(value: Symbol, functions: dict[tuple[str, int], type[Atom]]):
     value_type = value.type
     if value_type == SymbolType.Function:
         name = value.name
         arguments = value.arguments
         if not name:
-            return tuple([deserialize(arg, predicates) for arg in arguments])
+            return tuple([deserialize(arg, functions) for arg in arguments])
         try:
-            pred = predicates[(name, len(arguments))]
+            func = functions[(name, len(arguments))]
         except KeyError:
-            raise DeserializationError(f'Cannot deserialize predicate {name}/{len(arguments)}')
-        return pred(*[deserialize(arg, predicates) for arg in arguments])
+            raise DeserializationError(f'Cannot deserialize function {name}/{len(arguments)}')
+        return func(*[deserialize(arg, functions) for arg in arguments])
     elif value_type == SymbolType.String:
         return value.string.replace('\\t', '\t')
     elif value_type == SymbolType.Number:

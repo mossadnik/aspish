@@ -17,7 +17,7 @@ def iter_atom_attributes(atom: Atom):
 
 
 PAT_VARIABLE_NAME = re.compile(r'_*(?:[A-Z]\w*)$')
-PAT_PREDICATE_NAME = re.compile(r'_*[a-z]\w*$')
+PAT_FUNCTION_NAME = re.compile(r'_*[a-z]\w*$')
 
 
 class InvalidStatement(ValueError):
@@ -31,9 +31,9 @@ def validate_variable_name(name: str) -> None:
         raise InvalidStatement(f'Invalid variable name: {name}')
 
 
-def validate_predicate_name(name: str) -> None:
-    if not PAT_PREDICATE_NAME.match(name):
-        raise InvalidStatement(f'Invalid predicate name: {name}')
+def validate_function_name(name: str) -> None:
+    if not PAT_FUNCTION_NAME.match(name):
+        raise InvalidStatement(f'Invalid function name: {name}')
 
 
 def validate_fact(atom: Atom) -> set[type[Atom]]:

@@ -1,13 +1,13 @@
 import pytest
-from aspish import Solver, predicate, var, not_, constraint, choose, tuple_
+from aspish import Solver, function_, var, not_, constraint, choose, tuple_
 from aspish.validators import InvalidStatement
 
 
 class Test_basic_usage:
     def test_binary_relation_closure(self):
         sol = Solver()
-        path = predicate('path', ('x', 'y'))
-        edge = predicate('edge', ('x', 'y'))
+        path = function_('path', ('x', 'y'))
+        edge = function_('edge', ('x', 'y'))
         X, Y, Z = map(var, 'XYZ')
         sol.add(edge(1, 2))
         sol.add(edge(2, 3))
@@ -20,7 +20,7 @@ class Test_basic_usage:
 
     def test_negation(self):
         sol = Solver()
-        a = predicate('a', ('x',))
+        a = function_('a', ('x',))
         sol.add(a(1))
         sol.add(a(2) <= not_(a(1)))
         sol.add(a(3) <= not_(a(2)))
@@ -32,9 +32,9 @@ class Test_basic_usage:
     def test_arithmetic_examples(self):
         """Clingo guide examples."""
         sol = Solver()
-        left = predicate('left', ('val',))
-        right = predicate('right', ('val',))
-        result = predicate('result', ('name', 'val'))
+        left = function_('left', ('val',))
+        right = function_('right', ('val',))
+        result = function_('result', ('name', 'val'))
         L, R = map(var, 'LR')
         sol.add(
             left(7),
@@ -55,7 +55,7 @@ class Test_basic_usage:
 
     def test_isin(self):
         sol = Solver()
-        a = predicate('a', ('x',))
+        a = function_('a', ('x',))
         X = var('X')
         sol.add(a(X) <= X.isin(1, 2, 'x'))
         sol.solve()
@@ -63,7 +63,7 @@ class Test_basic_usage:
 
     def test_returns_False_if_unsat(self):
         sol = Solver()
-        a = predicate('a', ('x',))
+        a = function_('a', ('x',))
         sol.add(
             a(1),
             constraint(a(1))
@@ -73,7 +73,7 @@ class Test_basic_usage:
     def test_tuple_input_and_output(self):
         solver = Solver()
         X, Y = map(var, 'XY')
-        a = predicate('a', ('x',))
+        a = function_('a', ('x',))
         solver.add(a(tuple_(X, Y)) <= (X == 1, Y.between(2, 3)))
         solver.solve()
         assert set(solver.get(a)) == {a((1, 2)), a((1, 3))}
@@ -82,7 +82,7 @@ class Test_basic_usage:
 class Test_Solver_Interface:
     def test_add_allows_one_or_more_statements(self):
         sol = Solver()
-        a = predicate('a', ('x',))
+        a = function_('a', ('x',))
         sol.add(
             a(1),
             a(2),
@@ -92,8 +92,8 @@ class Test_Solver_Interface:
 
     def test_solve_model_predicate_filter(self):
         sol = Solver()
-        a = predicate('a', ('x',))
-        b = predicate('b', ('x',))
+        a = function_('a', ('x',))
+        b = function_('b', ('x',))
         sol.add(a(1), b(2))
         sol.solve()
         assert len(sol.raw_model) == 2
@@ -105,8 +105,8 @@ class Test_Solver_Interface:
 
     def test_deserializes_nested_functions(self):
         sol = Solver()
-        a = predicate('a', ('x',))
-        b = predicate('b', ('x',))
+        a = function_('a', ('x',))
+        b = function_('b', ('x',))
         sol.add(a(b(1)))
         assert sol.solve()
         assert sol.get(a) == [a(b(1))]
@@ -114,8 +114,8 @@ class Test_Solver_Interface:
     def test_solve_choice(self):
         """Choose three distinct numbers from 1..3"""
         sol = Solver()
-        a = predicate('a', ('x',))
-        b = predicate('b', ('x',))
+        a = function_('a', ('x',))
+        b = function_('b', ('x',))
         X, Y, Z = map(var, 'XYZ')
         sol.add(
             a(1),
@@ -128,6 +128,6 @@ class Test_Solver_Interface:
 class Test_input_validation:
     def test_invalid_fact(self):
         sol = Solver()
-        a = predicate('a', ('x',))
+        a = function_('a', ('x',))
         with pytest.raises(InvalidStatement):
             sol.add(a(None))

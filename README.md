@@ -10,11 +10,11 @@ This project is in early stages and is not stable.
 ## Basic Usage
 
 ```python
-from aspish import Solver, predicate, var
+from aspish import Solver, function_, var
 
 # declarations
-edge = predicate('edge', ('x', 'y'))
-path = predicate('path', ('x', 'y'))
+edge = function_('edge', ('x', 'y'))
+path = function_('path', ('x', 'y'))
 
 solver = Solver()
 X, Y, Z = map(var, 'XYZ')
