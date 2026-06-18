@@ -3,9 +3,9 @@ import itertools as it
 import clingo
 from clingo.symbol import SymbolType, Symbol
 from .translation import translate, deserialize, show, join_statements
-from .language import Atom, Rule, Choice, to_ast
+from .language import Function, Rule, Choice, to_ast
 from .validators import validate_fact, get_predicate_signature
-from .ast import UsedFunctionClasses
+from .ast import CollectFunctionClasses
 
 
 class Solver:
@@ -24,11 +24,11 @@ class Solver:
         for s in statements:
             if isinstance(s, (Rule, Choice)):
                 statement = to_ast(s)
-                visitor = UsedFunctionClasses()
+                visitor = CollectFunctionClasses()
                 visitor.visit(statement)
                 self._functions.update(visitor.functions)
                 self._statements.append(statement)
-            elif isinstance(s, Atom):
+            elif isinstance(s, Function):
                 self._functions.update(validate_fact(s))
                 self._facts.append(s)
             else:
@@ -37,30 +37,30 @@ class Solver:
 
     def solve(
             self,
-            predicates: Optional[type[Atom] | Iterable[type[Atom]]] = None
+            functions: Optional[type[Function] | Iterable[type[Function]]] = None
     ) -> bool:
         """Try to solve the logic program.
 
         Args:
-            predicates:
-                Optional list of output predicates of interest. For performance only, useful
+            functions:
+                Optional list of output functions of interest. For performance only, useful
                 if there are many intermediary results that need not be queried.
 
         Returns:
             A bool that indicates whether the program has been solved successfully.
         """
         self._ctl.add('base', [], join_statements(translate(s) for s in it.chain(self._facts, self._statements)))
-        filter_predicates = predicates is not None
-        if filter_predicates:
-            if isinstance(predicates, type):
-                predicates = [predicates]
-            self._ctl.add('base', [], join_statements(show(p) for p in predicates))
+        filter_functions = functions is not None
+        if filter_functions:
+            if isinstance(functions, type):
+                functions = [functions]
+            self._ctl.add('base', [], join_statements(show(p) for p in functions))
         self._ctl.ground()
         with self._ctl.solve(yield_=True) as handle:
             model = handle.model()
             if not model:
                 return False
-            self._raw_model = model.symbols(atoms=not filter_predicates, shown=filter_predicates)
+            self._raw_model = model.symbols(atoms=not filter_functions, shown=filter_functions)
             return True
 
     @property
@@ -78,7 +78,7 @@ class Solver:
             raise AttributeError('Need to call solve before getting model results.')
         return self._raw_model
 
-    def get(self, func: type[Atom]) -> list[Atom]:
+    def get(self, func: type[Function]) -> list[Function]:
         """Get all instances of the specified type from the solver model.
 
         Raises:
@@ -90,7 +90,7 @@ class Solver:
         functions = {get_predicate_signature(f): f for f in self._functions}
         functions[target_signature] = func
         return [
-            cast(Atom, deserialize(symbol, functions))
+            cast(Function, deserialize(symbol, functions))
             for symbol in self.raw_model
             if symbol.type == SymbolType.Function
             and (symbol.name, len(symbol.arguments)) == target_signature

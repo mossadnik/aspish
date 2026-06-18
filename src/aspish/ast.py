@@ -147,7 +147,7 @@ class ASTVisitor:
             leave_func(node)
 
 
-class UsedFunctionClasses(ASTVisitor):
+class CollectFunctionClasses(ASTVisitor):
     def __init__(self):
         self.functions = set()
 

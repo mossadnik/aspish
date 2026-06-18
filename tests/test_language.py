@@ -32,14 +32,14 @@ class Test_Atom_hashability:
 class Test_Rule_syntax:
     def test_with_single_body_atom(self):
         rel = function_('a', ('a',))
-        actual = rel(1) <= rel(2)
+        actual = rel(1) << rel(2)
         assert isinstance(actual, Rule)
         assert actual.head == rel(1)
         assert actual.body == (rel(2),)
 
     def test_with_multiple_body_atom(self):
         rel = function_('a', ('a',))
-        actual = rel(1) <= (rel(2), rel(3))
+        actual = rel(1) << (rel(2), rel(3))
         assert isinstance(actual, Rule)
         assert actual.head == rel(1)
         assert actual.body == (rel(2), rel(3))
@@ -65,27 +65,27 @@ class Test_to_ast:
         assert to_ast('abc') == ast.ASTLiteral('abc')
 
     def test_Function(self):
-        pred = function_('a', ('x',))
-        assert to_ast(pred(123)) == ast.ASTFunction(
+        func = function_('a', ('x',))
+        assert to_ast(func(123)) == ast.ASTFunction(
             name='a',
             arguments=(ast.ASTLiteral(123),),
-            source_cls=pred
+            source_cls=func
         )
 
     def test_Rule(self):
-        pred = function_('a', ('x',))
-        actual = to_ast(pred(1) <= pred(2))
+        func = function_('a', ('x',))
+        actual = to_ast(func(1) << func(2))
         expected = ast.ASTRule(
             head=ast.ASTFunction(
                 name='a',
                 arguments=(ast.ASTLiteral(1),),
-                source_cls=pred
+                source_cls=func
             ),
             body=(
                 ast.ASTFunction(
                     name='a',
                     arguments=(ast.ASTLiteral(2),),
-                    source_cls=pred
+                    source_cls=func
                 ),
             )
         )

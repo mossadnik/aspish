@@ -2,13 +2,14 @@ from typing import Iterable
 from dataclasses import make_dataclass, field
 from .language import (
     Variable,
-    Atom,
+    Function,
     Rule,
     BLANK,
     Not,
     BodyAtom,
     Body,
     Expression,
+    FunctionArg,
     Choice,
     Tuple
 )
@@ -45,24 +46,24 @@ class VariableSequence:
         self.idx = 1
 
 
-def function_(name: str, attributes: Iterable[str] | None = None) -> type[Atom]:
+def function_(name: str, attributes: Iterable[str] | None = None) -> type[Function]:
     validate_function_name(name)
     if attributes is None:
         attributes = ()
     return make_dataclass(
         name,
         [
-            (a, int | str | Expression | tuple[int | str | Expression, ...], field(default_factory=lambda: BLANK))
+            (a, FunctionArg, field(default_factory=lambda: BLANK))
             for a in attributes
         ],
-        bases=(Atom,),
+        bases=(Function,),
         frozen=True,
         slots=True,
         order=False
     )
 
 
-def not_(arg: Atom) -> Not:
+def not_(arg: Function) -> Not:
     return Not(arg)
 
 
@@ -71,11 +72,11 @@ def constraint(*body: BodyAtom) -> Rule:
     return Rule(head=None, body=body)
 
 
-def choose(head: Atom, body: Body, at_least: int = 0, at_most: int | None = None) -> Choice:
+def choose(head: Function, body: Body, at_least: int = 0, at_most: int | None = None) -> Choice:
     if not isinstance(body, tuple):
         body = (body,)
     return Choice(head, body, at_least, at_most)
 
 
-def tuple_(*args: Expression | Atom | int | str) -> Tuple:
+def tuple_(*args: Expression | Function | int | str) -> Tuple:
     return Tuple(args)

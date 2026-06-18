@@ -3,17 +3,17 @@
 import re
 from dataclasses import fields
 from .language import (
-    Atom,
+    Function,
 )
 
 
-def get_predicate_signature(atom: type[Atom]):
-    return (atom.__name__, len(fields(atom)))
+def get_predicate_signature(func: type[Function]):
+    return (func.__name__, len(fields(func)))
 
 
-def iter_atom_attributes(atom: Atom):
-    for f in fields(atom):
-        yield getattr(atom, f.name)
+def iter_atom_attributes(func: Function):
+    for f in fields(func):
+        yield getattr(func, f.name)
 
 
 PAT_VARIABLE_NAME = re.compile(r'_*(?:[A-Z]\w*)$')
@@ -36,11 +36,11 @@ def validate_function_name(name: str) -> None:
         raise InvalidStatement(f'Invalid function name: {name}')
 
 
-def validate_fact(atom: Atom) -> set[type[Atom]]:
-    res = {type(atom),}
-    for a in iter_atom_attributes(atom):
-        if isinstance(a, Atom):
+def validate_fact(func: Function) -> set[type[Function]]:
+    res = {type(func),}
+    for a in iter_atom_attributes(func):
+        if isinstance(a, Function):
             res.update(validate_fact(a))
         elif not isinstance(a, (int, str)):
-            raise InvalidStatement(f'Invalid argument for fact: {atom}')
+            raise InvalidStatement(f'Invalid argument for fact: {func}')
     return res

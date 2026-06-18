@@ -17,7 +17,7 @@ from .ast import (
     ASTTuple,
     ASTUnaryOperation,
 )
-from .language import Atom
+from .language import Function
 from .validators import (
     get_predicate_signature,
     iter_atom_attributes
@@ -36,7 +36,7 @@ def _(obj: ASTVariable) -> str:
 
 
 @translate.register
-def _(obj: Atom) -> str:
+def _(obj: Function) -> str:
     args = tuple(map(translate, iter_atom_attributes(obj)))
     func = obj.__class__.__name__
     if args:
@@ -144,7 +144,7 @@ def _(obj: ASTChoice) -> str:
     return f'{obj.at_least} {{ {head}{body} }}{at_most}'
 
 
-def show(obj: type[Atom]) -> str:
+def show(obj: type[Function]) -> str:
     name, arity = get_predicate_signature(obj)
     return f'#show {name}/{arity}'
 
@@ -157,7 +157,7 @@ class DeserializationError(ValueError):
     pass
 
 
-def deserialize(value: Symbol, functions: dict[tuple[str, int], type[Atom]]):
+def deserialize(value: Symbol, functions: dict[tuple[str, int], type[Function]]):
     value_type = value.type
     if value_type == SymbolType.Function:
         name = value.name

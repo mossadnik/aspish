@@ -11,8 +11,8 @@ class Test_basic_usage:
         X, Y, Z = map(var, 'XYZ')
         sol.add(edge(1, 2))
         sol.add(edge(2, 3))
-        sol.add(path(X, Y) <= edge(X, Y))
-        sol.add(path(X, Y) <= (edge(X, Z), path(Z, Y)))
+        sol.add(path(X, Y) << edge(X, Y))
+        sol.add(path(X, Y) << (edge(X, Z), path(Z, Y)))
         assert sol.solve()
         actual = sol.get(path)
         expected = {path(1, 2), path(2, 3), path(1, 3)}
@@ -22,8 +22,8 @@ class Test_basic_usage:
         sol = Solver()
         a = function_('a', ('x',))
         sol.add(a(1))
-        sol.add(a(2) <= not_(a(1)))
-        sol.add(a(3) <= not_(a(2)))
+        sol.add(a(2) << not_(a(1)))
+        sol.add(a(3) << not_(a(2)))
         assert sol.solve()
         actual = sol.get(a)
         expected = {a(1), a(3)}
@@ -41,9 +41,9 @@ class Test_basic_usage:
             right(2)
         )
         sol.add(
-            result('plus', L + R) <= (left(L), right(R)),
-            result('minus', L - R) <= (left(L), right(R)),
-            result('uminus', -R) <= right(R),
+            result('plus', L + R) << (left(L), right(R)),
+            result('minus', L - R) << (left(L), right(R)),
+            result('uminus', -R) << right(R),
         )
         sol.solve()
         actual = {r for r in sol.get(result)}
@@ -57,7 +57,7 @@ class Test_basic_usage:
         sol = Solver()
         a = function_('a', ('x',))
         X = var('X')
-        sol.add(a(X) <= X.isin(1, 2, 'x'))
+        sol.add(a(X) << X.isin(1, 2, 'x'))
         sol.solve()
         assert set(sol.get(a)) == {a(1), a(2), a('x')}
 
@@ -74,7 +74,7 @@ class Test_basic_usage:
         solver = Solver()
         X, Y = map(var, 'XY')
         a = function_('a', ('x',))
-        solver.add(a(tuple_(X, Y)) <= (X == 1, Y.between(2, 3)))
+        solver.add(a(tuple_(X, Y)) << (X == 1, Y.between(2, 3)))
         solver.solve()
         assert set(solver.get(a)) == {a((1, 2)), a((1, 3))}
 
@@ -86,7 +86,7 @@ class Test_Solver_Interface:
         sol.add(
             a(1),
             a(2),
-            a(3) <= a(2)
+            a(3) << a(2)
         ).solve()
         assert set(sol.get(a)) == {a(1), a(2), a(3)}
 
@@ -98,7 +98,7 @@ class Test_Solver_Interface:
         sol.solve()
         assert len(sol.raw_model) == 2
         for predicates in (b, [b]):
-            sol.solve(predicates=predicates)
+            sol.solve(functions=predicates)
             assert len(sol.raw_model) == 1
             assert len(sol.get(b)) == 1
             assert len(sol.get(a)) == 0

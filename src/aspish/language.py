@@ -1,13 +1,14 @@
-from typing import TypeAlias
+from typing import TypeAlias, Union
 from functools import singledispatch
 from dataclasses import dataclass, fields
 from .const import ComparisonOperator, BinaryOperator, UnaryOperator
 from . import ast
 
 
-AnyExpression: TypeAlias = 'Expression | int | str'
-Body: TypeAlias = 'Atom | Comparison | Not | tuple[Atom | Comparison | Not, ...]'
-BodyAtom: TypeAlias = 'Atom | Comparison | Not'
+AnyExpression: TypeAlias = Union['Expression', int, str]
+BodyAtom: TypeAlias = Union['Function', 'Comparison', 'Not']
+Body: TypeAlias = Union[BodyAtom, tuple[BodyAtom, ...]]
+FunctionArg: TypeAlias = Union['Function', 'Expression', int, str]
 
 
 @dataclass(frozen=True, eq=False, order=False)
@@ -93,12 +94,12 @@ class Variable(Expression):
 
 
 @dataclass(frozen=True, slots=True)
-class Atom:
+class Function:
     # need args/kwargs so that static type checker does not complain about subclass constructor
    def __init__(self, *args, **kwargs):
        super().__init__()
 
-   def __le__(self, other: Body) -> 'Rule':
+   def __lshift__(self, other: Body) -> 'Rule':
         if not isinstance(other, tuple):
             other = (other,)
         return Rule(self, other)
@@ -106,23 +107,23 @@ class Atom:
 
 @dataclass(frozen=True)
 class Not:
-    arg: Atom
+    arg: Function
 
 
 @dataclass(frozen=True)
 class Rule:
-    head: 'Atom | Choice | None'
+    head: 'Function | Choice | None'
     body: tuple[BodyAtom, ...]
 
 
 @dataclass(frozen=True, order=False)
 class Choice:
-    head: Atom
+    head: Function
     body: tuple[BodyAtom, ...]
     at_least: int
     at_most: int | None
 
-    def __le__(self, other: Body) -> Rule:
+    def __lshift__(self, other: Body) -> Rule:
         if not isinstance(other, tuple):
             other = (other,)
         return Rule(self, other)
@@ -130,7 +131,7 @@ class Choice:
 
 @dataclass(frozen=True, order=False, eq=False)
 class Tuple(Expression):
-    args: tuple
+    args: tuple[FunctionArg, ...]
 
 BLANK = Variable('_')
 
@@ -146,7 +147,7 @@ def _(obj: Variable) -> ast.ASTNode:
 
 
 @to_ast.register
-def _(obj: Atom) -> ast.ASTNode:
+def _(obj: Function) -> ast.ASTNode:
     arguments = map(to_ast, (getattr(obj, a.name) for a in fields(obj)))
     return ast.ASTFunction(name=obj.__class__.__name__, arguments=tuple(arguments), source_cls=obj.__class__)
 

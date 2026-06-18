@@ -38,9 +38,8 @@ class Test_translate:
         assert translate(ASTVariable('X')) == 'X'
 
     def test_atom(self):
-        rel = function_('a', ('a', 'b'))
-        atom = rel(1, 'b')
-        assert translate(atom) == 'a(1, "b")'
+        f = function_('a', ('a', 'b'))
+        assert translate(f(1, 'b')) == 'a(1, "b")'
 
     def test_atom_no_attributes(self):
         a = function_('a')
@@ -49,7 +48,7 @@ class Test_translate:
     def test_rule(self):
         rel = function_('a', ('a','b'))
         X = var('X')
-        rule = rel(X, 1) <= rel(X, 2)
+        rule = rel(X, 1) << rel(X, 2)
         assert translate(to_ast(rule)) == 'a(X, 1) :- a(X, 2)'
 
     def test_not_exists(self):
@@ -160,7 +159,7 @@ class Test_choose:
         a = function_('a', ('x',))
         X = var('X')
         translates_to(
-            choose(a(X), X > 0, 1, 1) <= X.between(1, 2),
+            choose(a(X), X > 0, 1, 1) << X.between(1, 2),
             '1 { a(X) : X > 0 } 1 :- X = 1..2'
         )
 
