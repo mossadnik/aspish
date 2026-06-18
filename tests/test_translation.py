@@ -12,7 +12,22 @@ def translates_to(expr, text: str) -> None:
     assert translate(to_ast(expr)) == text
 
 
-class Test_translate:
+class Test_translate_fact:
+    """Facts can be translated without AST."""
+    def test_atom(self):
+        f = function_('a', ('a', 'b'))
+        assert translate(f(1, 'b')) == 'a(1, "b")'
+
+    def test_atom_no_attributes(self):
+        a = function_('a')
+        assert translate(a()) == 'a'
+
+    def test_tuple(self):
+        a = function_('a', ('x',))
+        assert translate(a(tuple_(1))) == 'a((1))'
+
+
+class Test_translate_rule:
     def test_string_printable_characters(self):
         """Some characters in the ASCII range need separate serde due to escaping in clingo.
 
@@ -36,14 +51,6 @@ class Test_translate:
 
     def test_variable(self):
         assert translate(ASTVariable('X')) == 'X'
-
-    def test_atom(self):
-        f = function_('a', ('a', 'b'))
-        assert translate(f(1, 'b')) == 'a(1, "b")'
-
-    def test_atom_no_attributes(self):
-        a = function_('a')
-        translates_to(a(), 'a')
 
     def test_rule(self):
         rel = function_('a', ('a','b'))

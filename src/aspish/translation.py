@@ -17,7 +17,7 @@ from .ast import (
     ASTTuple,
     ASTUnaryOperation,
 )
-from .language import Function
+from .language import Function, Tuple
 from .validators import (
     get_predicate_signature,
     iter_atom_attributes
@@ -43,6 +43,12 @@ def _(obj: Function) -> str:
         return f'{func}({ut.csv(args)})'
     else:
         return func
+
+
+@translate.register
+def _(obj: Tuple) -> str:
+    args = tuple(map(translate, obj.args))
+    return f'({ut.csv(args)})'
 
 
 STRING_ESCAPE = {
