@@ -4,7 +4,7 @@ import clingo
 from clingo.symbol import SymbolType, Symbol
 from .translation import translate, deserialize, show, join_statements
 from .language import Function, Rule, Choice, to_ast
-from .validators import validate_fact, get_predicate_signature
+from .validators import validate_fact, get_internal_signature
 from .ast import CollectFunctionClasses
 
 
@@ -86,8 +86,8 @@ class Solver:
             If there is not model available because either the program has not been solved
             or the program is unsatisfiable.
         """
-        target_signature = get_predicate_signature(func)
-        functions = {get_predicate_signature(f): f for f in self._functions}
+        target_signature = get_internal_signature(func)
+        functions = {get_internal_signature(f): f for f in self._functions}
         functions[target_signature] = func
         return [
             cast(Function, deserialize(symbol, functions))

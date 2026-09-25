@@ -1,5 +1,5 @@
 from typing import Iterable
-from dataclasses import make_dataclass, field
+from dataclasses import make_dataclass, field, fields
 from .language import (
     Variable,
     Function,
@@ -79,4 +79,10 @@ def choose(head: Function, body: Body, at_least: int = 0, at_most: int | None = 
 
 
 def tuple_(*args: Expression | Function | int | str) -> Tuple:
+    """Create a headless function."""
     return Tuple(args)
+
+
+def signature(func: type[Function]) -> tuple[str, ...]:
+    """Returns names of function arguments."""
+    return tuple([f.name for f in fields(func)])

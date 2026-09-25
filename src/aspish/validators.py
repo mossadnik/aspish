@@ -7,7 +7,8 @@ from .language import (
 )
 
 
-def get_predicate_signature(func: type[Function]):
+def get_internal_signature(func: type[Function]) -> tuple[str, int]:
+    """Get the internal function signature that is used in the underlying solver."""
     return (func.__name__, len(fields(func)))
 
 

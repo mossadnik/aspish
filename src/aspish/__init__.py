@@ -7,6 +7,7 @@ from .functions import (
     not_,
     choose,
     tuple_,
+    signature,
 )
 from .language import BLANK
 
@@ -24,4 +25,5 @@ __all__ = [
     'constraint',
     'choose',
     'tuple_',
+    'signature',
 ]

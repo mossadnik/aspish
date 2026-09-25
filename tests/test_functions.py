@@ -1,5 +1,5 @@
 import pytest
-from aspish.functions import VariableSequence
+from aspish.functions import VariableSequence, function_, signature
 from aspish.validators import InvalidStatement
 
 
@@ -28,3 +28,9 @@ class Test_VariableSequence:
     def test_raised_if_invalid_prefix(self):
         with pytest.raises(InvalidStatement):
             VariableSequence('x')
+
+
+class Test_signature:
+    def test_returns_argument_names(self):
+        func = function_('a', ('x', 'y'))
+        assert signature(func) == ('x', 'y')

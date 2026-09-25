@@ -19,7 +19,7 @@ from .ast import (
 )
 from .language import Function, Tuple
 from .validators import (
-    get_predicate_signature,
+    get_internal_signature,
     iter_atom_attributes
 )
 from . import utils as ut
@@ -151,7 +151,7 @@ def _(obj: ASTChoice) -> str:
 
 
 def show(obj: type[Function]) -> str:
-    name, arity = get_predicate_signature(obj)
+    name, arity = get_internal_signature(obj)
     return f'#show {name}/{arity}'
 
 

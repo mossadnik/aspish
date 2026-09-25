@@ -41,3 +41,39 @@ solver.get(path)
 # returns
 [path(x=1, y=2), path(x=2, y=3), path(x=1, y=3)]
 ```
+
+
+### Integrating with external data
+
+Usually the input data will not be entered directly. Instead, we pull facts from a source. Similarly, output data will be converted into a different format. Conversion into and out of aspish facts is not complicated when restricting to atomic attributes only, i.e. when not using nesting like `f(f(1), g(h(2)))`. Then an aspish function is equivalent to a table or dataframe with no nulls and no duplicates.
+
+Here's a minimal example how we can get valid data out of a pyspark DataFrame:
+
+```python
+from pyspark.sql import DataFrame
+from aspish import signature
+from aspish.language import Function
+
+def df2asp(df: DataFrame, func: type[Function]) -> list[Function]:
+    sig = signature(func)
+    clean = (
+        df
+        .select(*sig)
+        dropna()
+        .distinct()
+    )
+    return [func(**row.asDIct()) for row in clean.collect()]
+```
+
+And here's how to convert a collection of functions back to pyspark. We use the fact that all functions created with `apish.function_` are simple dataclasses which can be handled by pandas:
+
+```python
+from typing import Iterable
+import pandas as pd
+from pyspark.sql import SparkSession, DataFrame
+from aspish.language import Function
+
+
+def asp2df(data: Iterable[Function], spark: SparkSession) -> DataFrame:
+    return spark.createDataFrame(pd.DataFrame(data))
+```
